@@ -38,38 +38,42 @@ MODEL_DEFAULT = "claude-opus-5-5"
 ZONE_LED_CROP = (1040, 430, 1230, 640)      # Taco status LED column
 BOILER_DISPLAY_CROP = (88, 172, 545, 300)   # the P-950EH LCD panel
 
-# HTP / Laars P-950EH control. Icon legend below is from the manual's Figure 36
-# (LCD Display Detail) - positions are exactly as they appear on the physical display.
-BOILER_PROMPT = """These two images are a camera view of an HTP / Laars P-950EH boiler
-controller LCD (the second image is a zoom). Read the LCD using this EXACT icon legend;
-the stated positions are where each icon sits on the display:
+# HTP UFT-series boiler, P-950EH control. Icon legend is from manual LP-542 Figure 51
+# (LCD Display) - positions are exactly as they appear on the physical display.
+BOILER_PROMPT = """These two images are a camera view of an HTP UFT-series boiler
+controller LCD (P-950EH control; the second image is a zoom). Read the LCD using this
+EXACT icon legend; the stated positions are where each icon sits on the display:
 
 - CH / central-heating demand: a RADIATOR icon (a block of several vertical bars/fins
   with short horizontal lines), on the LEFT, just left of the big number. (It flashes
-  when there is a simultaneous heat + DHW/storage call.)
-- DHW (domestic hot water) demand: a SHOWER / FAUCET icon (a tap/showerhead with wavy
-  water lines or droplets), LOWER-LEFT, near the house icon.
-- Storage / "heating stored water" (indirect tank): a TANK / CONTAINER icon (a rounded
-  rectangle with horizontal lines inside), in the TOP ROW, just right of the snowflake.
+  when there is a call for heat while a DHW demand is also being met.)
+- DHW (domestic hot water) demand: a small RECTANGLE / BOX filled with a few HORIZONTAL
+  LINES, in the TOP ROW, sitting between the snowflake and the [i] info icon. This box is
+  "Appliance is Meeting DHW Demand". (It flashes if there's a hot-water call plus a CH
+  demand.) There is NO separate shower or tank icon on this model - this box is DHW.
 - FLAME ON (burner actually firing): a CROWN-OF-FLAMES icon (a row of ~4-5 pointed peaks,
-  like a small crown), on the RIGHT side, below the degrees C/F letters. This CROWN icon
-  is the ONLY true "is the burner firing" indicator - do not infer flame from anything else.
-- Pump running: a TRIANGLE-INSIDE-A-CIRCLE, on the RIGHT, below the flame icon.
-- Outdoor-temperature mode: a HOUSE-WITH-THERMOMETER icon, lower-left. NOTE it FLASHES when
-  no outdoor sensor is connected, so it often means only "no sensor", not any demand.
-- Also present (report only if clearly lit, via display_text): SNOWFLAKE (anti-freeze,
-  top-left), ((o)) + signal bars (communication, top center-right), padlock (lock, top
-  center), [i] (info/installer, top right).
+  like a small crown/comb), on the RIGHT side, below the F/C letters. This CROWN is the
+  ONLY true "is the burner firing" indicator - do not infer flame from anything else.
+- FAN ON: a small FAN icon on the RIGHT, just below the flame crown.
+- Pumps (three TRIANGLE-IN-CIRCLE icons stacked on the lower RIGHT, top to bottom =
+  Boiler pump, CH/System pump, DHW pump). Report whether any pump triangle is lit, and
+  the DHW (bottom) one specifically if you can tell them apart.
+- Outdoor-temperature mode: a HOUSE-WITH-THERMOMETER icon, upper-left. It FLASHES when no
+  outdoor sensor is connected, so it usually means only "no sensor", not any demand - IGNORE
+  it for mode. A SUN icon (far upper-left) = warm-weather shutdown. SNOWFLAKE = anti-freeze.
+- Also present (note only in display_text if clearly lit): [i] info (top), wrench (service),
+  ((o)) communication (top right). Bottom row 0-18 boxes = cascade status.
 
 Judge an icon as LIT only if its segments are clearly, solidly on - a faint ghost = OFF.
 Assess each icon independently. Return ONLY a JSON object:
 {
   "temperature": "<the big number with units, or null>",
-  "flame_on": true/false,       // the CROWN-of-flames icon on the right is solidly lit
-  "ch_icon": true/false,        // radiator icon (left)
-  "dhw_icon": true/false,       // shower/faucet icon (lower-left)
-  "storage_icon": true/false,   // tank/container icon (top row)
-  "pump_on": true/false,        // triangle-in-circle (right)
+  "flame_on": true/false,     // the CROWN-of-flames icon on the right is solidly lit
+  "fan_on": true/false,       // the fan icon on the right
+  "ch_icon": true/false,      // radiator icon (left) = heating demand
+  "dhw_icon": true/false,     // top-row horizontal-lines box = DHW demand
+  "pump_on": true/false,      // any triangle-in-circle pump icon lit (lower right)
+  "dhw_pump": true/false,     // the DHW (bottom) pump triangle specifically, if distinguishable
   "error_codes": ["<any fault codes shown, e.g. E04>"],
   "display_text": "<any other legible text/number on screen, verbatim>",
   "legible": true/false
@@ -170,8 +174,6 @@ def derive_mode(r):
     between cycles. Priority: storage > dhw > heating > idle."""
     if not isinstance(r, dict) or r.get("legible") is False:
         return "unknown"
-    if r.get("storage_icon"):
-        return "storage"
     if r.get("dhw_icon"):
         return "dhw"
     if r.get("ch_icon"):
