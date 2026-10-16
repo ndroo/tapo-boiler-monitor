@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-16T15:38:10.695058+00:00",
-  "local": "2026-10-16T15:38:10",
+  "timestamp": "2026-10-16T16:08:25.207009+00:00",
+  "local": "2026-10-16T16:08:25",
   "boiler": {
-    "image": "boiler_20261016_153826.jpg",
+    "image": "boiler_20261016_160841.jpg",
     "reading": {
       "temperature": "73\u00b0F",
-      "time_text": "11:03",
+      "time_text": "1:39",
       "day_text": "MON",
       "flame_on": false,
       "fan_on": false,
@@ -22,30 +22,30 @@
       "comm_icon": false,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "11:03 MON 73 F",
+      "display_text": "1:39 MON 73 F",
       "legible": true,
       "confidence": "medium",
-      "notes": "Time reads 11:03 in the zoom though the overlay says 10:38; the house icon is lit but may be flashing, and the two pump icons look moderately dark.",
+      "notes": "Time AM/PM indicator and the exact day are blurry; the pump icons look dark but the zoomed image is low resolution, and the house icon may be flashing.",
       "pump_on": true,
       "mode": "heating"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3261,
-      "output": 254,
+      "output": 253,
       "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261016_153845.jpg",
+    "image": "zone_20261016_160902.jpg",
     "pixels": {
       "power": {
         "white": 0.97,
         "mean": 249
       },
       "zone1": {
-        "white": 0.863,
-        "mean": 239
+        "white": 0.853,
+        "mean": 238
       },
       "zone2": {
         "white": 0.0,
@@ -53,7 +53,7 @@
       },
       "zone3": {
         "white": 0.0,
-        "mean": 55
+        "mean": 54
       },
       "zone4": {
         "white": 0.0,
@@ -67,7 +67,7 @@
       "zone3": false,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.97, zone1 0.86, zone2 0.00, zone3 0.00, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.97, zone1 0.85, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
