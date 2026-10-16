@@ -76,7 +76,12 @@ python3 grab_boiler_cloud.py --camera zone   # just grab a still
 
 ## Schedule / cost
 
-- Cron runs every 30 minutes at :07 and :37 (`.github/workflows/monitor.yml`). GitHub Actions compute is free at
+- Scheduling is a **self-chaining loop** (`.github/workflows/loop.yml` + `loop.sh`): one
+  run loops ~5.5 h (ecobee every 15 min, cameras every 30 min, commit after each cycle),
+  then dispatches its successor. GitHub's cron fired only 2 of 12 slots on day one, so it is
+  kept only as an hourly backstop that queues behind an active loop. `monitor.yml` and
+  `ecobee.yml` remain for one-off manual runs. To stop everything: cancel the running
+  `monitor-loop` and dispatch it once with `chain=no` (or disable the workflow). GitHub Actions compute is free at
   this volume (public repo).
 - The only real cost is the Claude API: one boiler read per cycle, 48/day (~$0.018 on Opus 5.5,
   ~$26/month; ~$0.009 on Sonnet 5.5, ~$13/month, which scored 10/10 on the 2026-10-16 benchmark, see
