@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-16T18:09:27.309794+00:00",
-  "local": "2026-10-16T18:09:27",
+  "timestamp": "2026-10-16T18:39:51.167839+00:00",
+  "local": "2026-10-16T18:39:51",
   "boiler": {
-    "image": "boiler_20261016_180943.jpg",
+    "image": "boiler_20261016_184007.jpg",
     "reading": {
       "temperature": "73\u00b0F",
-      "time_text": "3:34 AM",
+      "time_text": "4:05",
       "day_text": "MON",
       "flame_on": false,
       "fan_on": false,
@@ -19,25 +19,25 @@
       "snowflake_icon": false,
       "info_icon": false,
       "wrench_icon": false,
-      "comm_icon": true,
+      "comm_icon": false,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "AM 3:34 MON III 73 F",
+      "display_text": "4:05 MON 73\u00b0F",
       "legible": true,
       "confidence": "medium",
-      "notes": "Low-resolution zoom; the house icon and comm icon look dark but the pump circles appear only moderately dark, so the pump states are uncertain.",
+      "notes": "The radiator icon and the two pump icons look dark. The house icon is faintly visible and may be flashing, and AM/PM is unclear. The comm icon is a faint ghost.",
       "pump_on": true,
       "mode": "heating"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3261,
-      "output": 256,
+      "output": 259,
       "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261016_181012.jpg",
+    "image": "zone_20261016_184026.jpg",
     "pixels": {
       "power": {
         "white": 0.959,
@@ -45,19 +45,19 @@
       },
       "zone1": {
         "white": 0.853,
-        "mean": 237
+        "mean": 236
       },
       "zone2": {
-        "white": 0.203,
-        "mean": 146
+        "white": 0.259,
+        "mean": 148
       },
       "zone3": {
-        "white": 0.812,
+        "white": 0.797,
         "mean": 230
       },
       "zone4": {
         "white": 0.0,
-        "mean": 94
+        "mean": 95
       }
     },
     "reading": {
@@ -67,7 +67,7 @@
       "zone3": true,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.96, zone1 0.85, zone2 0.20, zone3 0.81, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.96, zone1 0.85, zone2 0.26, zone3 0.80, zone4 0.00"
     }
   },
   "alert": {

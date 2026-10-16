@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-16T18:24:46.190670+00:00",
-  "local": "2026-10-16T18:24:46",
+  "timestamp": "2026-10-16T18:39:49.699685+00:00",
+  "local": "2026-10-16T18:39:49",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,7 +14,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 18:23:10",
+      "last_status": "2026-10-16 18:36:10",
       "hvac_mode": "heat",
       "temp": 68.1,
       "humidity": 59,
@@ -87,9 +87,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 18:22:17",
+      "last_status": "2026-10-16 18:35:46",
       "hvac_mode": "heat",
-      "temp": 71.0,
+      "temp": 71.1,
       "humidity": 58,
       "set_heat": 71.6,
       "set_cool": 77.9,
@@ -104,7 +104,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 71.0,
+          "temp": 71.1,
           "occupied": false,
           "humidity": 58
         }
@@ -122,9 +122,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 18:24:20",
+      "last_status": "2026-10-16 18:39:35",
       "hvac_mode": "auto",
-      "temp": 69.0,
+      "temp": 68.9,
       "humidity": 62,
       "set_heat": 66.9,
       "set_cool": 72.5,
@@ -142,7 +142,7 @@
         {
           "name": "Master bedroom",
           "type": "ecobee3_remote_sensor",
-          "temp": 69.0,
+          "temp": 68.9,
           "occupied": false,
           "humidity": null
         },
@@ -195,7 +195,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-16 18:24:19",
+      "last_status": "2026-10-16 18:39:18",
       "hvac_mode": "off",
       "temp": 65.3,
       "humidity": 52,
@@ -233,7 +233,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-16 18:24:02",
+      "last_status": "2026-10-16 18:39:01",
       "hvac_mode": "off",
       "temp": 63.6,
       "humidity": 53,
