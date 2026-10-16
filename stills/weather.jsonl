@@ -181,4 +181,4 @@
 {"t": "2026-10-16T12:00Z", "temp_c": 16.4, "apparent_c": 16.5, "humidity": 90, "wind_kmh": 9.7, "precip_mm": 0.0, "weather_code": 3}
 {"t": "2026-10-16T13:00Z", "temp_c": 17.7, "apparent_c": 17.7, "humidity": 86, "wind_kmh": 12.6, "precip_mm": 0.0, "weather_code": 3}
 {"t": "2026-10-16T14:00Z", "temp_c": 17.1, "apparent_c": 16.3, "humidity": 85, "wind_kmh": 16.3, "precip_mm": 0.0, "weather_code": 3}
-{"t": "2026-10-16T15:00Z", "temp_c": 15.9, "apparent_c": 15.2, "humidity": 87, "wind_kmh": 13.5, "precip_mm": 0.0, "weather_code": 3}
+{"t": "2026-10-16T15:00Z", "temp_c": 15.9, "apparent_c": 15.1, "humidity": 85, "wind_kmh": 13.5, "precip_mm": 0.0, "weather_code": 3}
