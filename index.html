@@ -104,6 +104,14 @@
     </div>
   </div>
 
+  <!-- ALERT HISTORY -->
+  <div class="card">
+    <h2>Alert history</h2>
+    <div class="tbl-wrap"><table><thead><tr>
+      <th>Time</th><th>Type</th><th>Delivery</th><th>Details</th>
+    </tr></thead><tbody id="abody"></tbody></table></div>
+  </div>
+
   <!-- TABLE -->
   <div class="card">
     <h2>Readings</h2>
@@ -301,6 +309,32 @@ function renderAll(){
   $("sub").textContent = `${ALL.length} readings total · showing ${rows.length}`;
 }
 
+function renderAlerts(list){
+  const kindPill = k => k==="problem" ? '<span class="pill bad">problem</span>'
+    : k==="cleared" ? '<span class="pill ok">cleared</span>'
+    : '<span class="pill off">suppressed</span>';
+  const delivPill = d => d==="sent" ? '<span class="pill ok">sent</span>'
+    : d==="failed" ? '<span class="pill bad">failed</span>'
+    : d==="suppressed" ? '<span class="pill off">throttled</span>'
+    : '<span class="pill warn">not configured</span>';
+  $("abody").innerHTML = list.slice().reverse().slice(0,80).map(a=>{
+    const det = (a.problems&&a.problems.length? a.problems.join(", ") : (a.message||"").replace(/^[^A-Za-z0-9]+\s*/,""))
+      + (a.error? ` — ${a.error}` : "");
+    return `<tr><td>${fmt(Date.parse(a.timestamp||a.local)||0,true)}</td><td>${kindPill(a.kind)}</td>
+      <td>${delivPill(a.delivery)}</td><td style="white-space:normal">${det}</td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="empty">No alerts recorded yet — nothing has gone wrong. 🎉</td></tr>`;
+}
+
+async function loadAlerts(){
+  try{
+    const r=await fetch("stills/alerts.jsonl?t="+Date.now(), {cache:"no-store"});
+    if(!r.ok){ renderAlerts([]); return; }
+    const text=await r.text();
+    const list=text.trim().split("\n").filter(Boolean).map(l=>{try{return JSON.parse(l);}catch(e){return null;}}).filter(Boolean);
+    renderAlerts(list);
+  }catch(e){ renderAlerts([]); }
+}
+
 async function load(){
   try{
     const r=await fetch("stills/readings.jsonl?t="+Date.now(), {cache:"no-store"});
@@ -309,6 +343,7 @@ async function load(){
     ALL.sort((a,b)=>a.ts-b.ts);
     renderAll();
   }catch(e){ $("sub").textContent="Could not load readings ("+e+")"; }
+  loadAlerts();
 }
 
 $("ctls").addEventListener("click",e=>{

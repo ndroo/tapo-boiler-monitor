@@ -152,7 +152,7 @@ def send_sms(body):
     to = os.environ.get("ALERT_TO")
     if not all([account, user, pw, frm, to]):
         log("SMS not sent (Twilio env not fully set). Would have sent:", body)
-        return False
+        return {"status": "not_configured", "message": body}
     try:
         r = requests.post(
             f"https://api.twilio.com/2010-04-01/Accounts/{account}/Messages.json",
@@ -160,12 +160,16 @@ def send_sms(body):
             auth=(user, pw), timeout=20,
         )
         if r.status_code < 300:
+            sid = ""
+            try: sid = r.json().get("sid", "")
+            except Exception: pass
             log("SMS sent:", body)
-            return True
+            return {"status": "sent", "sid": sid, "message": body}
         log(f"SMS FAILED (HTTP {r.status_code}): {r.text[:200]}")
+        return {"status": "failed", "error": f"HTTP {r.status_code}: {r.text[:160]}", "message": body}
     except Exception as e:
         log("SMS error:", e)
-    return False
+        return {"status": "failed", "error": str(e)[:200], "message": body}
 
 
 def derive_mode(r):
@@ -193,6 +197,17 @@ def boiler_problems(reading):
     if reading.get("legible") is False:
         probs.append("screen unreadable / display out")
     return probs
+
+
+def log_alert(out, result, kind, message, problems, delivery, sid="", error=""):
+    """Append one line to alerts.jsonl - the durable, auditable alert history.
+    kind: problem | cleared | suppressed. delivery: sent | failed | not_configured | suppressed."""
+    rec = {"timestamp": result.get("timestamp"), "local": result.get("local"),
+           "kind": kind, "delivery": delivery, "message": message, "problems": problems}
+    if sid: rec["sid"] = sid
+    if error: rec["error"] = error
+    with open(os.path.join(out, "alerts.jsonl"), "a") as f:
+        f.write(json.dumps(rec) + "\n")
 
 
 def _state_path(out): return os.path.join(out, "alert_state.json")
@@ -240,15 +255,21 @@ def evaluate_and_alert(result, out):
         passed = state.get("pass_since_alert", False)   # an OK cycle since the last alert
         stale = last_ts is not None and (now - last_ts) >= ALERT_MIN_INTERVAL
         if last_ts is None or passed or stale:
-            sent = send_sms(f"⚠️ Boiler monitor: {sig}. ({when})")
+            msg = f"⚠️ Boiler monitor: {sig}. ({when})"
+            res = send_sms(msg)
+            sent = res.get("status") == "sent"
+            log_alert(out, result, "problem", msg, probs, res.get("status"), res.get("sid", ""), res.get("error", ""))
             state["last_alert_ts"] = now
             state["alerted_open"] = True
             state["pass_since_alert"] = False
         else:
             log(f"alert suppressed (within 24h, no pass since last): {sig}")
+            log_alert(out, result, "suppressed", f"⚠️ {sig}", probs, "suppressed")
     else:    # OK cycle == a "pass"
         if state.get("alerted_open"):
-            send_sms(f"✅ Boiler monitor: previous issue cleared, now normal. ({when})")
+            msg = f"✅ Boiler monitor: previous issue cleared, now normal. ({when})"
+            res = send_sms(msg)
+            log_alert(out, result, "cleared", msg, [], res.get("status"), res.get("sid", ""), res.get("error", ""))
         state["alerted_open"] = False
         state["pass_since_alert"] = True
 

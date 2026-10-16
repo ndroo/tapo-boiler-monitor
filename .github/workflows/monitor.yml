@@ -46,11 +46,11 @@ jobs:
           ALERT_TO:              ${{ secrets.ALERT_TO }}
         run: python monitor.py --once
 
-      - name: Trim readings log to the last 2000 cycles
+      - name: Trim logs to the last 2000 lines
         run: |
-          if [ -f stills/readings.jsonl ]; then
-            tail -n 2000 stills/readings.jsonl > stills/readings.tmp && mv stills/readings.tmp stills/readings.jsonl
-          fi
+          for f in stills/readings.jsonl stills/alerts.jsonl; do
+            if [ -f "$f" ]; then tail -n 2000 "$f" > "$f.tmp" && mv "$f.tmp" "$f"; fi
+          done
 
       - name: Commit results
         run: |
@@ -58,7 +58,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -f stills/boiler_latest.jpg stills/zone_latest.jpg \
                      stills/readings.jsonl stills/readings_latest.json \
-                     stills/alert_state.json 2>/dev/null || true
+                     stills/alert_state.json stills/alerts.jsonl 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
