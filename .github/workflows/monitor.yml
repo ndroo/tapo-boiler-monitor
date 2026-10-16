@@ -56,12 +56,18 @@ jobs:
         run: |
           git config user.name  "tapo-monitor-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f stills/boiler_latest.jpg stills/zone_latest.jpg \
-                     stills/readings.jsonl stills/readings_latest.json \
-                     stills/alert_state.json stills/alerts.jsonl 2>/dev/null || true
+          # Add each output only if it exists: a single missing pathspec (e.g. alerts.jsonl
+          # before the first alert) makes `git add` abort and stage NOTHING.
+          for f in stills/boiler_latest.jpg stills/zone_latest.jpg \
+                   stills/readings.jsonl stills/readings_latest.json \
+                   stills/alert_state.json stills/alerts.jsonl; do
+            if [ -f "$f" ]; then git add -f "$f"; fi
+          done
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "readings $(date -u +%Y-%m-%dT%H:%MZ)"
+            # Rebase onto anything pushed since checkout (e.g. a dashboard edit) so the push can't be rejected.
+            git pull --rebase origin main
             git push
           fi
