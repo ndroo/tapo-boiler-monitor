@@ -75,6 +75,37 @@ def blank_config(**over):
     cfg.update(over); return cfg
 
 
+# ---------------------------------------------------------------- web login
+def web_login(email, password, totp_secret="", interactive=False):
+    """Full ecobee web sign-in (Auth0 + PKCE). Handles an authenticator-app MFA challenge
+    from ECOBEE_TOTP_SECRET, or prompts when interactive. Returns the Ecobee client with
+    fresh access + refresh tokens, or exits with a clear message."""
+    eco = Ecobee(config=blank_config(**{ECOBEE_USERNAME: email, ECOBEE_PASSWORD: password}))
+    try:
+        eco.request_tokens_web()
+    except EcobeeAuthMfaRequiredError as e:
+        if totp_secret and e.challenge.mfa_type == "otp":
+            import pyotp
+            code = pyotp.TOTP(totp_secret).now()
+            log("MFA: generated a TOTP code from ECOBEE_TOTP_SECRET.")
+        elif interactive:
+            code = input(f"MFA code ({e.challenge.mfa_type}; authenticator app or SMS): ").strip()
+        else:
+            sys.exit(f"ecobee asked for MFA ({e.challenge.mfa_type}) and no ECOBEE_TOTP_SECRET is set; "
+                     "cannot sign in unattended.")
+        try:
+            eco.submit_mfa_code(e.challenge, code)
+        except EcobeeAuthFailedError as err:
+            sys.exit(f"MFA rejected: {err}")
+    except EcobeeAuthFailedError as err:
+        sys.exit(f"Login failed: {err}")
+    except EcobeeAuthUnknownError as err:
+        sys.exit(f"Login error: {err}")
+    if not eco.refresh_token:
+        sys.exit("Login succeeded but no refresh token was returned; cannot run unattended.")
+    return eco
+
+
 # ---------------------------------------------------------------- login (interactive)
 def cmd_login(a):
     load_dotenv()
@@ -87,26 +118,7 @@ def cmd_login(a):
     email = a.email or os.environ.get("ECOBEE_EMAIL") or input("ecobee.com email: ").strip()
     password = os.environ.get("ECOBEE_PASSWORD") or getpass.getpass("ecobee.com password (not stored): ")
     totp_secret = (os.environ.get("ECOBEE_TOTP_SECRET") or "").replace(" ", "")
-    eco = Ecobee(config=blank_config(**{ECOBEE_USERNAME: email, ECOBEE_PASSWORD: password}))
-    try:
-        eco.request_tokens_web()
-    except EcobeeAuthMfaRequiredError as e:
-        if totp_secret and e.challenge.mfa_type == "otp":
-            import pyotp
-            code = pyotp.TOTP(totp_secret).now()
-            print("MFA: generated a TOTP code from ECOBEE_TOTP_SECRET.")
-        else:
-            code = input(f"MFA code ({e.challenge.mfa_type}; authenticator app or SMS): ").strip()
-        try:
-            eco.submit_mfa_code(e.challenge, code)
-        except EcobeeAuthFailedError as err:
-            sys.exit(f"MFA rejected: {err}")
-    except EcobeeAuthFailedError as err:
-        sys.exit(f"Login failed: {err}")
-    except EcobeeAuthUnknownError as err:
-        sys.exit(f"Login error: {err}")
-    if not eco.refresh_token:
-        sys.exit("Login succeeded but no refresh token was returned; cannot run unattended.")
+    eco = web_login(email, password, totp_secret, interactive=True)
     write_tokens({"refresh_token": eco.refresh_token, "access_token": eco.access_token,
                   "obtained": datetime.now(timezone.utc).isoformat(), "email": email})
     print(f"Tokens saved to {TOKEN_FILE} (encrypted). Password was not stored.")
@@ -181,8 +193,24 @@ def poll(out):
     try:
         eco.refresh_tokens()
     except InvalidTokenError:
-        sys.exit("ecobee refresh token rejected (password changed or access revoked). "
-                 "Re-run `python3 ecobee_monitor.py login --publish`.")
+        # The refresh token was revoked or has expired. If the sign-in credentials are
+        # available (local .env, or ECOBEE_EMAIL / ECOBEE_PASSWORD / ECOBEE_TOTP_SECRET
+        # GitHub Secrets), sign in again and carry on; otherwise fail loudly.
+        email, pw = os.environ.get("ECOBEE_EMAIL"), os.environ.get("ECOBEE_PASSWORD")
+        if email and pw:
+            log("refresh token rejected -> signing in again with stored credentials")
+            eco = web_login(email, pw, (os.environ.get("ECOBEE_TOTP_SECRET") or "").replace(" ", ""))
+            tok.update({"refresh_token": eco.refresh_token, "access_token": eco.access_token,
+                        "obtained": datetime.now(timezone.utc).isoformat(), "relogin": True})
+            write_tokens(tok); log("new tokens saved")
+        else:
+            os.makedirs(out, exist_ok=True)
+            with open(os.path.join(out, "ecobee_latest.json"), "w") as f:
+                json.dump({"timestamp": datetime.now(timezone.utc).isoformat(), "error": "refresh token rejected; re-login needed",
+                           "thermostats": []}, f, indent=2)
+            sys.exit("ecobee refresh token rejected (expired, password changed, or access revoked) and no "
+                     "ECOBEE_EMAIL/ECOBEE_PASSWORD available for an unattended re-login. "
+                     "Run `python3 ecobee_monitor.py login --publish`.")
     if eco.refresh_token != tok["refresh_token"]:
         tok["refresh_token"] = eco.refresh_token; tok["rotated"] = datetime.now(timezone.utc).isoformat()
         write_tokens(tok); log("refresh token rotated; ecobee_token.enc updated")

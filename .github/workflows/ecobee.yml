@@ -26,7 +26,12 @@ jobs:
         run: pip install "python-ecobee-api>=0.4.4" cryptography requests
       - name: Poll thermostats
         env:
-          ECOBEE_TOKEN_KEY: ${{ secrets.ECOBEE_TOKEN_KEY }}
+          ECOBEE_TOKEN_KEY:    ${{ secrets.ECOBEE_TOKEN_KEY }}
+          # Optional. If set, the job signs in again by itself when the refresh token is
+          # ever rejected (expiry / password change) instead of failing until someone re-runs login.
+          ECOBEE_EMAIL:        ${{ secrets.ECOBEE_EMAIL }}
+          ECOBEE_PASSWORD:     ${{ secrets.ECOBEE_PASSWORD }}
+          ECOBEE_TOTP_SECRET:  ${{ secrets.ECOBEE_TOTP_SECRET }}
         run: python ecobee_monitor.py --once
       - name: Trim log to the last 10000 lines (~100 days at 96/day)
         run: |
