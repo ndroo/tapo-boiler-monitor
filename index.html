@@ -441,7 +441,7 @@ function renderTimeline(rows, erows=[], wrows=[]){
         // a bar runs to the next sample of ITS source; the last, still-current bar of every source
         // runs to the shared right edge so 15-min and 30-min series end together
         const end = (j+1<rs.length && (rs[j+1].ts-rs[j].ts)<=gapMs) ? rs[j+1].ts
-                  : (j===rs.length-1 && tmax-rs[j].ts<=gapMs) ? tmax : Math.min(rs[j].ts+expMs, tmax);
+                  : (j===rs.length-1 && now-rs[j].ts<=gapMs) ? tmax : Math.min(rs[j].ts+expMs, tmax);
         const x1=x(end);
         if(x1-x0 >= 0.5) s+=`<rect x="${x0}" y="${y}" width="${Math.max(1.5,x1-x0)}" height="${h}" fill="${col[k]}" rx="2"/>`;
       }
