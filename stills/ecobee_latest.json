@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-16T16:53:51.122520+00:00",
-  "local": "2026-10-16T16:53:51",
+  "timestamp": "2026-10-16T17:08:54.770307+00:00",
+  "local": "2026-10-16T17:08:54",
   "thermostats": [
     {
       "id": "511899414284",
@@ -13,7 +13,7 @@
         "streetAddress": "180 Beatrice St",
         "city": "Toronto"
       },
-      "connected": true,
+      "connected": false,
       "last_status": "2026-10-16 16:47:41",
       "hvac_mode": "heat",
       "temp": 68.1,
@@ -87,9 +87,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 16:51:32",
+      "last_status": "2026-10-16 17:06:17",
       "hvac_mode": "heat",
-      "temp": 71.1,
+      "temp": 71.2,
       "humidity": 59,
       "set_heat": 71.6,
       "set_cool": 77.9,
@@ -104,7 +104,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 71.1,
+          "temp": 71.2,
           "occupied": false,
           "humidity": 59
         }
@@ -122,7 +122,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 16:50:36",
+      "last_status": "2026-10-16 17:04:37",
       "hvac_mode": "auto",
       "temp": 69.0,
       "humidity": 62,
@@ -195,10 +195,10 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-16 16:51:04",
+      "last_status": "2026-10-16 17:03:20",
       "hvac_mode": "off",
-      "temp": 65.2,
-      "humidity": 53,
+      "temp": 65.4,
+      "humidity": 52,
       "set_heat": 66.2,
       "set_cool": 66.2,
       "equipment": [],
@@ -215,9 +215,9 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 65.2,
+          "temp": 65.4,
           "occupied": null,
-          "humidity": 53
+          "humidity": 52
         }
       ]
     },
@@ -233,9 +233,9 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-16 16:53:02",
+      "last_status": "2026-10-16 16:56:03",
       "hvac_mode": "off",
-      "temp": 63.7,
+      "temp": 63.6,
       "humidity": 53,
       "set_heat": 68.0,
       "set_cool": 77.9,
@@ -248,7 +248,7 @@
         {
           "name": "Upstairs",
           "type": "thermostat",
-          "temp": 63.7,
+          "temp": 63.6,
           "occupied": null,
           "humidity": 53
         }
