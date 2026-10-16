@@ -1,76 +1,39 @@
 {
-  "timestamp": "2026-10-16T14:09:55.773187+00:00",
-  "local": "2026-10-16T14:09:55",
+  "timestamp": "2026-10-16T14:16:52.372690+00:00",
+  "local": "2026-10-16T14:16:52",
   "thermostats": [
     {
-      "id": "317485194626",
-      "name": "152 Strachan Ave",
-      "model": "athenaSmart",
-      "label": "152 Strachan Ave (ecobee3)",
+      "id": "511899414284",
+      "name": "Home",
+      "model": "apolloSmart",
+      "label": "Zone 1 \u00b7 ecobee4",
+      "zone": 1,
       "location": {
         "name": null,
-        "streetAddress": "152 Strachan Ave",
+        "streetAddress": "180 Beatrice St",
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 14:07:53",
-      "hvac_mode": "auto",
-      "temp": 69.2,
-      "humidity": 63,
-      "set_heat": 66.9,
-      "set_cool": 72.5,
-      "equipment": [],
-      "heating": false,
+      "last_status": "2026-10-16 14:11:27",
+      "hvac_mode": "heat",
+      "temp": 68.1,
+      "humidity": 59,
+      "set_heat": 68.9,
+      "set_cool": 77.9,
+      "equipment": [
+        "auxHeat1"
+      ],
+      "heating": true,
       "fan": false,
       "climate": "Home",
-      "hold": {
-        "type": "hold",
-        "name": "hold",
-        "heat": 66.9,
-        "until": "2035-12-29 12:00:00"
-      },
+      "hold": null,
       "sensors": [
         {
-          "name": "Master bedroom",
-          "type": "ecobee3_remote_sensor",
-          "temp": 69.2,
-          "occupied": false,
-          "humidity": null
-        },
-        {
-          "name": "landing",
-          "type": "ecobee3_remote_sensor",
-          "temp": null,
-          "occupied": false,
-          "humidity": null
-        },
-        {
-          "name": "Living Room",
-          "type": "ecobee3_remote_sensor",
-          "temp": null,
-          "occupied": false,
-          "humidity": null
-        },
-        {
-          "name": "Guest bedroom",
-          "type": "ecobee3_remote_sensor",
-          "temp": null,
-          "occupied": false,
-          "humidity": null
-        },
-        {
-          "name": "152 Strachan Ave",
+          "name": "Home",
           "type": "thermostat",
-          "temp": 69.9,
+          "temp": 68.1,
           "occupied": false,
-          "humidity": 63
-        },
-        {
-          "name": "Basement",
-          "type": "ecobee3_remote_sensor",
-          "temp": null,
-          "occupied": false,
-          "humidity": null
+          "humidity": 59
         }
       ]
     },
@@ -78,7 +41,8 @@
       "id": "411937213889",
       "name": "Home",
       "model": "nikeSmart",
-      "label": "Home \u00b7 ecobee3 lite",
+      "label": "Zone 2 \u00b7 ecobee3 lite",
+      "zone": 2,
       "location": {
         "name": null,
         "streetAddress": "180 beatrice st",
@@ -115,14 +79,15 @@
       "id": "421862969595",
       "name": "Home",
       "model": "artemisSmart",
-      "label": "Home \u00b7 Smart Thermostat",
+      "label": "Zone 3 \u00b7 Smart Thermostat",
+      "zone": 3,
       "location": {
         "name": null,
         "streetAddress": "180 Beatrice St",
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 14:03:32",
+      "last_status": "2026-10-16 14:16:02",
       "hvac_mode": "heat",
       "temp": 71.5,
       "humidity": 58,
@@ -144,36 +109,77 @@
       ]
     },
     {
-      "id": "511899414284",
-      "name": "Home",
-      "model": "apolloSmart",
-      "label": "Home \u00b7 ecobee4",
+      "id": "317485194626",
+      "name": "152 Strachan Ave",
+      "model": "athenaSmart",
+      "label": "152 Strachan Ave (ecobee3)",
+      "zone": null,
       "location": {
         "name": null,
-        "streetAddress": "180 Beatrice St",
+        "streetAddress": "152 Strachan Ave",
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 14:02:42",
-      "hvac_mode": "heat",
-      "temp": 68.2,
-      "humidity": 59,
-      "set_heat": 68.9,
-      "set_cool": 77.9,
+      "last_status": "2026-10-16 14:12:53",
+      "hvac_mode": "auto",
+      "temp": 69.2,
+      "humidity": 62,
+      "set_heat": 66.9,
+      "set_cool": 72.5,
       "equipment": [
-        "auxHeat1"
+        "fan"
       ],
-      "heating": true,
-      "fan": false,
+      "heating": false,
+      "fan": true,
       "climate": "Home",
-      "hold": null,
+      "hold": {
+        "type": "hold",
+        "name": "hold",
+        "heat": 66.9,
+        "until": "2035-12-29 12:00:00"
+      },
       "sensors": [
         {
-          "name": "Home",
-          "type": "thermostat",
-          "temp": 68.2,
+          "name": "Master bedroom",
+          "type": "ecobee3_remote_sensor",
+          "temp": 69.2,
+          "occupied": true,
+          "humidity": null
+        },
+        {
+          "name": "landing",
+          "type": "ecobee3_remote_sensor",
+          "temp": null,
           "occupied": false,
-          "humidity": 59
+          "humidity": null
+        },
+        {
+          "name": "Living Room",
+          "type": "ecobee3_remote_sensor",
+          "temp": null,
+          "occupied": false,
+          "humidity": null
+        },
+        {
+          "name": "Guest bedroom",
+          "type": "ecobee3_remote_sensor",
+          "temp": null,
+          "occupied": false,
+          "humidity": null
+        },
+        {
+          "name": "152 Strachan Ave",
+          "type": "thermostat",
+          "temp": 70.0,
+          "occupied": false,
+          "humidity": 62
+        },
+        {
+          "name": "Basement",
+          "type": "ecobee3_remote_sensor",
+          "temp": null,
+          "occupied": false,
+          "humidity": null
         }
       ]
     },
@@ -182,13 +188,14 @@
       "name": "Main Floor",
       "model": "nikeSmart",
       "label": "Main Floor (ecobee3 lite)",
+      "zone": null,
       "location": {
         "name": null,
         "streetAddress": "1068 Tarpaper Trail",
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-16 14:09:34",
+      "last_status": "2026-10-16 14:15:50",
       "hvac_mode": "off",
       "temp": 65.2,
       "humidity": 54,
@@ -219,6 +226,7 @@
       "name": "Upstairs",
       "model": "nikeSmart",
       "label": "Upstairs (ecobee3 lite)",
+      "zone": null,
       "location": {
         "name": null,
         "streetAddress": "1068 Tarpaper Trail",
