@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install deps
-        run: pip install "python-ecobee-api>=0.4.4" cryptography requests
+        run: pip install "python-ecobee-api>=0.4.4" cryptography requests pyotp
       - name: Poll thermostats
         env:
           ECOBEE_TOKEN_KEY:    ${{ secrets.ECOBEE_TOKEN_KEY }}
