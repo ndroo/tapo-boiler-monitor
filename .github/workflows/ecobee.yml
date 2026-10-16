@@ -2,9 +2,9 @@ name: ecobee-monitor
 
 # Polls every ecobee thermostat on the account every 15 minutes (free: no model calls) and
 # commits stills/ecobee.jsonl + ecobee_latest.json. Also runnable on demand.
+# Scheduling now lives in loop.yml (a self-chaining run; GitHub's cron proved unreliable).
+# This workflow stays for one-off manual runs from the Actions tab.
 on:
-  schedule:
-    - cron: "3,18,33,48 * * * *"   # :03 :18 :33 :48 - off the top of the hour, and not on the camera job's :07/:37
   workflow_dispatch: {}
 
 permissions:

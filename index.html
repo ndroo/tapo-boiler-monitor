@@ -157,7 +157,7 @@
     <h2>Readings <span class="sub">(click a row for the full detail)</span></h2>
     <div class="tbl-wrap"><table><thead><tr>
       <th>Time</th><th>Temp</th><th>Mode</th><th>Flame</th><th>Fan</th><th>Pumps B·CH·DHW</th><th>Errors</th>
-      <th>Pwr</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Zone via</th><th>Model</th><th>Tokens</th>
+      <th>Pwr</th><th title="relay LED · thermostat temp (▲ = calling)">Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Zone via</th><th>Model</th><th>Tokens</th>
     </tr></thead><tbody id="tbody"></tbody></table></div>
   </div>
 
@@ -193,6 +193,17 @@ async function loadEco(){
 }
 function windowedEco(){ if(!WINDOW_H) return ECO; const cut=Date.now()-WINDOW_H*3600e3; return ECO.filter(r=>r.ts>=cut); }
 const thermIn = (row,id) => row ? row.t.find(x=>x.id===id) : null;
+function nearestEco(ts, maxMs=20*60e3){           // ECO is sorted by ts; binary search the closest poll
+  if(!ECO.length) return null; let lo=0, hi=ECO.length-1;
+  while(lo<hi){ const mid=(lo+hi)>>1; if(ECO[mid].ts<ts) lo=mid+1; else hi=mid; }
+  const c=[ECO[lo], ECO[lo-1]].filter(Boolean).sort((a,b)=>Math.abs(a.ts-ts)-Math.abs(b.ts-ts))[0];
+  return (c && Math.abs(c.ts-ts)<=maxMs) ? c : null;
+}
+function zoneTempCell(z, e){                        // "● 68.1°" with the set-point in the title
+  const th=THERMS.find(t=>t.zone===z); const t=th&&e?thermIn(e,th.id):null;
+  if(!t) return ""; if(!t.connected) return ` <span class="sub" title="thermostat offline">off-line</span>`;
+  return ` <span class="sub" style="font-variant-numeric:tabular-nums" title="${th.name}: ${t.temp}° / set ${t.set}°${t.heating?' · calling':''}">${t.temp!=null?t.temp.toFixed(1):'—'}°${t.heating?'<span style="color:#ff7a1a">▲</span>':''}</span>`;
+}
 
 function tempNum(s){ if(s==null) return null; const m=String(s).match(/-?\d+(\.\d+)?/); return m?parseFloat(m[0]):null; }
 const tri = v => (v===true?true : v===false?false : null);   // null = not captured by that version
@@ -514,6 +525,7 @@ const D = v => v===null?'<i class="dot unk" title="not captured"></i>' : v?'<i c
 function renderTable(rows){
   const esc = s => String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
   $("tbody").innerHTML = rows.slice().reverse().slice(0,200).map((r,i)=>{
+    const e=nearestEco(r.ts);
     const mode=!r.legible?'<span class="pill bad">screen out</span>'
       :r.mode==="heating"?'<span class="pill warn">heating</span>'
       :r.mode==="dhw"?'<span class="pill dhw">dhw</span>'
@@ -535,7 +547,7 @@ function renderTable(rows){
     return `<tr class="main" data-i="${i}"><td>${fmt(r.ts,true)}</td><td class="num">${r.temp??'—'}</td><td>${mode}</td>
       <td>${r.flame===null?D(null):r.flame?'🔥':'·'}</td><td>${D(r.fan)}</td><td>${pumps}</td>
       <td>${r.codes.length?'<span class="pill bad">'+r.codes.join(", ")+'</span>':'—'}</td>
-      <td>${D(r.power)}</td><td>${D(r.z1)}</td><td>${D(r.z2)}</td><td>${D(r.z3)}</td><td>${D(r.z4)}</td>
+      <td>${D(r.power)}</td><td>${D(r.z1)}${zoneTempCell(1,e)}</td><td>${D(r.z2)}${zoneTempCell(2,e)}</td><td>${D(r.z3)}${zoneTempCell(3,e)}</td><td>${D(r.z4)}</td>
       <td class="sub">${r.zmethod||"—"}</td><td class="sub">${modelCell(r)}</td><td class="num sub">${r.tokens?r.tokens.toLocaleString():"—"}</td></tr>
       <tr class="det" data-i="${i}" hidden><td colspan="15">${det}</td></tr>`;
   }).join("") || `<tr><td colspan="15" class="empty">No readings yet.</td></tr>`;

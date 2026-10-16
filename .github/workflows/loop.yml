@@ -1,0 +1,66 @@
+name: monitor-loop
+
+# GitHub's cron is unreliable for this repo (it fired 2 of 12 slots on 2026-10-16), so the
+# steady-state scheduler is this self-chaining job: one run loops for ~5.5 h doing the
+# ecobee poll every 15 min and the camera capture every 30 min, committing after each
+# cycle, then dispatches its own successor (workflow_dispatch IS allowed from GITHUB_TOKEN).
+# The hourly cron below is only a backstop that restarts the chain if a run ever dies.
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "How long this run should loop (default 330 ≈ 5.5 h; GitHub kills jobs at 6 h)"
+        default: "330"
+      chain:
+        description: "Dispatch a successor when done (yes/no)"
+        default: "yes"
+  schedule:
+    - cron: "11 * * * *"   # backstop only; a run already in progress makes this one wait in the queue
+
+permissions:
+  contents: write
+  actions: write
+
+# One loop at a time. A cron/backstop run that arrives while a loop is active queues
+# behind it instead of running alongside (cancel-in-progress stays false).
+concurrency:
+  group: monitor-loop
+  cancel-in-progress: false
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Install Python deps
+        run: pip install -q -r requirements.txt
+      - name: Loop (camera every 30 min, ecobee every 15 min)
+        env:
+          TPLINK_EMAIL:          ${{ secrets.TPLINK_EMAIL }}
+          TPLINK_PASSWORD:       ${{ secrets.TPLINK_PASSWORD }}
+          TPLINK_TERMINAL_UUID:  ${{ secrets.TPLINK_TERMINAL_UUID }}
+          ANTHROPIC_API_KEY:     ${{ secrets.ANTHROPIC_API_KEY }}
+          TWILIO_ACCOUNT_SID:    ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN:     ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_API_KEY_SID:    ${{ secrets.TWILIO_API_KEY_SID }}
+          TWILIO_API_KEY_SECRET: ${{ secrets.TWILIO_API_KEY_SECRET }}
+          TWILIO_FROM:           ${{ secrets.TWILIO_FROM }}
+          ALERT_TO:              ${{ secrets.ALERT_TO }}
+          ECOBEE_TOKEN_KEY:      ${{ secrets.ECOBEE_TOKEN_KEY }}
+          ECOBEE_EMAIL:          ${{ secrets.ECOBEE_EMAIL }}
+          ECOBEE_PASSWORD:       ${{ secrets.ECOBEE_PASSWORD }}
+          ECOBEE_TOTP_SECRET:    ${{ secrets.ECOBEE_TOTP_SECRET }}
+          LOOP_MINUTES:          ${{ github.event.inputs.minutes || '330' }}
+          CAMERA_MODEL:          claude-sonnet-5-5
+        run: bash loop.sh
+      - name: Dispatch the next run
+        if: always() && (github.event.inputs.chain || 'yes') == 'yes'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run loop.yml --repo "$GITHUB_REPOSITORY" --ref main
