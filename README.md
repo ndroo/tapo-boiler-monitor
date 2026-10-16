@@ -6,8 +6,10 @@ running entirely in **GitHub Actions** (no laptop, no site hardware, no local ne
 Each hour it:
 1. Captures a fresh 1080p still from each camera (pure cloud: TP-Link login → MQTT relay
    → MPEG-TS → ffmpeg; reconstructed from the Tapo app, no emulator).
-2. Runs each image through Claude vision for structured readings
-   (boiler temperature / mode / flame / **error codes**; zone power + which zones are on).
+2. Reads the boiler LCD with Claude vision (structured JSON: temperature, every icon from
+   the manual's Fig. 51 legend, **error codes**), and reads the zone panel's LEDs
+   **deterministically from pixels** (white-core fraction at each LED; Claude is only asked
+   when a LED is ambiguous or the POWER LED looks dark).
 3. **Texts you (Twilio SMS)** if the boiler shows any error code or its screen is
    unreadable — once per state change, plus an "all clear" when it recovers.
 4. Commits the latest images + `readings.jsonl` back to the repo, and a small dashboard
@@ -58,9 +60,13 @@ python3 grab_boiler_cloud.py --camera zone   # just grab a still
 ## Notes
 
 - Cameras are **C100** — wired, always-on, 1920×1080 (the model's max).
-- Boiler is an **HTP FT-series, P-950EH control**: a radiator icon = heating (CH),
-  a tank/"Storage" icon = domestic hot water (DHW), a flame icon = burner firing.
-- Zone panel is a **Taco SR504-EXP**; LEDs are judged ON only by a bright white-hot core
-  (adjacent LEDs bleed colour).
+- Boiler is an **HTP UFT-series, P-950EH control**. Icon legend = manual LP-542 Fig. 51
+  (`docs/fig51.png`); the annotated version (`docs/fig51_legend.png`) is sent to the model
+  with every capture. Radiator = heating (CH) call; small box with horizontal lines (top
+  row) = DHW call; crown of flames = burner firing; two side-by-side triangles = boiler +
+  CH pumps, the single one below = DHW pump. See `legend.html` on the site.
+- Zone panel is a **Taco SR504-EXP**; LED positions are hard-coded in `monitor.py`
+  (`ZONE_LEDS`) - re-measure if the camera moves. `--zone-llm always` forces a Claude read
+  every cycle, `never` disables the fallback.
 - The Pages dashboard (and this repo, if public) is viewable by anyone with the URL — it
   shows mechanical-equipment images only, no personal data.

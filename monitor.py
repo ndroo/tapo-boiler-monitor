@@ -5,7 +5,9 @@ vision for structured readings, and text an alert (via Twilio) if the boiler sho
 any error code or its screen is unreadable.
 
   - boiler: the P-950EH controller LCD -> temperature, mode, flame, error codes
-  - zone:   the Taco SR504-EXP panel   -> power + zones 1/2/3 on/off (bright LED core)
+  - zone:   the Taco SR504-EXP panel   -> power + zones 1-4, read from PIXELS (white-core
+            fraction at each LED's fixed position); Claude is only consulted when a LED is
+            ambiguous or the power LED looks dark (panel off / camera moved)
 
 Each cycle appends one JSON object to <out>/readings.jsonl and mirrors the latest to
 <out>/readings_latest.json. Alert de-duplication state lives in <out>/alert_state.json
@@ -37,50 +39,71 @@ MODEL_DEFAULT = "claude-opus-5-5"
 # indicators. Re-tune if a camera is moved.
 ZONE_LED_CROP = (1040, 430, 1230, 640)      # Taco status LED column
 BOILER_DISPLAY_CROP = (88, 172, 545, 300)   # the P-950EH LCD panel
+FULL_FRAME_WIDTH = 640                      # context frame sent alongside the zoom (cheap)
+LEGEND_IMAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "fig51_legend.png")
+
+# Zone LEDs are read DETERMINISTICALLY from pixels: each LED's centre in the full frame
+# and a radius. A lit LED has a blown-out white core (min(R,G,B) >= 200 over most of the
+# disc); an unlit one is at most a dim colour bleed. Measured over 11 stills: ON = 0.81-0.96
+# white fraction, OFF = 0.00-0.28 (zone 2 sitting between two lit LEDs is the worst case).
+ZONE_LEDS = {"power": (1129, 462), "zone1": (1129, 487), "zone2": (1129, 510),
+             "zone3": (1129, 534), "zone4": (1129, 558)}
+LED_RADIUS = 8
+LED_WHITE_MIN = 200          # per-channel floor for a "white core" pixel
+LED_ON_FRAC = 0.5            # white fraction above this = ON
+LED_AMBIGUOUS = (0.35, 0.65) # inside this band -> ask Claude to confirm
 
 # HTP UFT-series boiler, P-950EH control. Icon legend is from manual LP-542 Figure 51
-# (LCD Display) - positions are exactly as they appear on the physical display.
-BOILER_PROMPT = """These two images are a camera view of an HTP UFT-series boiler
-controller LCD (P-950EH control; the second image is a zoom). Read the LCD using this
-EXACT icon legend; the stated positions are where each icon sits on the display:
+# (LCD Display). The model gets the annotated figure itself as a reference image.
+BOILER_PROMPT = """You are reading the LCD of an HTP UFT-series boiler controller (P-950EH).
+IMAGE 1 is the manufacturer's legend drawing of this exact LCD (manual LP-542, Figure 51)
+with the key icons boxed. IMAGE 2 is the full camera frame for context. IMAGE 3 is a zoom
+of the LCD - read from IMAGE 3, use IMAGE 1 to identify what each segment means.
 
-- CH / central-heating demand: a RADIATOR icon (a block of several vertical bars/fins
-  with short horizontal lines), on the LEFT, just left of the big number. (It flashes
-  when there is a call for heat while a DHW demand is also being met.)
-- DHW (domestic hot water) demand: a small RECTANGLE / BOX filled with a few HORIZONTAL
-  LINES, in the TOP ROW, sitting between the snowflake and the [i] info icon. This box is
-  "Appliance is Meeting DHW Demand". (It flashes if there's a hot-water call plus a CH
-  demand.) There is NO separate shower or tank icon on this model - this box is DHW.
-- FLAME ON (burner actually firing): a CROWN-OF-FLAMES icon (a row of ~4-5 pointed peaks,
-  like a small crown/comb), on the RIGHT side, below the F/C letters. This CROWN is the
-  ONLY true "is the burner firing" indicator - do not infer flame from anything else.
-- FAN ON: a small FAN icon on the RIGHT, just below the flame crown.
-- Pumps (three TRIANGLE-IN-CIRCLE icons on the lower RIGHT, below the F/C letters).
-  Layout per Fig.51: TWO sit SIDE BY SIDE in the upper row = Boiler pump (left) and
-  CH/System pump (right); a THIRD sits alone BELOW them = DHW pump. So two lit triangles
-  in a row means boiler + CH pumps (NOT DHW); dhw_pump is true only if the lower, single
-  triangle under that row is lit.
-- Outdoor-temperature mode: a HOUSE-WITH-THERMOMETER icon, upper-left. It FLASHES when no
-  outdoor sensor is connected, so it usually means only "no sensor", not any demand - IGNORE
-  it for mode. A SUN icon (far upper-left) = warm-weather shutdown. SNOWFLAKE = anti-freeze.
-- Also present (note only in display_text if clearly lit): [i] info (top), wrench (service),
-  ((o)) communication (top right). Bottom row 0-18 boxes = cascade status.
+Icon positions (as in the drawing, left to right):
+- TOP ROW: SUN (far left) = warm-weather shutdown; HOUSE-with-thermometer = outdoor
+  temperature mode (it FLASHES when no outdoor sensor is connected, so it carries no demand
+  information); SNOWFLAKE = anti-freeze; a small BOX with HORIZONTAL LINES = "Appliance is
+  Meeting DHW Demand" (this is the ONLY hot-water indicator); [i] = status/installer mode;
+  WRENCH = service reminder; ((o)) = communication state.
+- MIDDLE: time (AM/PM hh:mm) and day row on the left; a RADIATOR icon (vertical fins) just
+  left of the big number = "Appliance is Operating in CH Mode" (heating demand); the big
+  number = temperature with F or C.
+- RIGHT, below the F/C letters: a CROWN-of-flames = burner firing (the only true flame
+  indicator); a FAN icon = fan on; then TWO triangle-in-circle icons SIDE BY SIDE = Boiler
+  pump (left) and CH/System pump (right); a THIRD triangle-in-circle ALONE BELOW them = DHW
+  pump.
+- BOTTOM: 0-18 numbered boxes = cascade status (normally blank on a single boiler).
 
-Judge an icon as LIT only if its segments are clearly, solidly on - a faint ghost = OFF.
-Assess each icon independently. Return ONLY a JSON object:
-{
-  "temperature": "<the big number with units, or null>",
-  "flame_on": true/false,     // the CROWN-of-flames icon on the right is solidly lit
-  "fan_on": true/false,       // the fan icon on the right
-  "ch_icon": true/false,      // radiator icon (left) = heating demand
-  "dhw_icon": true/false,     // top-row horizontal-lines box = DHW demand
-  "pump_on": true/false,      // any triangle-in-circle pump icon lit (lower right)
-  "dhw_pump": true/false,     // the DHW (bottom) pump triangle specifically, if distinguishable
-  "error_codes": ["<any fault codes shown, e.g. E04>"],
-  "display_text": "<any other legible text/number on screen, verbatim>",
-  "legible": true/false
+Judge an icon LIT only if its segments are clearly, solidly dark/black. A faint ghost
+outline (all segments are faintly visible on an LCD) is OFF. Assess each icon independently.
+Report any fault code shown in place of the temperature (e.g. "E04", "Er:76") in
+error_codes. If the screen is off or unreadable, set legible=false and all booleans false."""
+
+BOILER_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "temperature":   {"type": ["string", "null"], "description": "big number with unit, e.g. '73°F'"},
+        "time_text":     {"type": ["string", "null"], "description": "clock as shown, e.g. '10:07 AM'"},
+        "day_text":      {"type": ["string", "null"], "description": "day-of-week segment lit, e.g. 'SUN'"},
+        "flame_on":      {"type": "boolean"}, "fan_on": {"type": "boolean"},
+        "ch_icon":       {"type": "boolean"}, "dhw_icon": {"type": "boolean"},
+        "boiler_pump":   {"type": "boolean"}, "ch_pump": {"type": "boolean"}, "dhw_pump": {"type": "boolean"},
+        "sun_icon":      {"type": "boolean"}, "house_icon": {"type": "boolean"}, "snowflake_icon": {"type": "boolean"},
+        "info_icon":     {"type": "boolean"}, "wrench_icon": {"type": "boolean"}, "comm_icon": {"type": "boolean"},
+        "cascade_text":  {"type": ["string", "null"], "description": "any cascade numbers/boxes lit, else null"},
+        "error_codes":   {"type": "array", "items": {"type": "string"}},
+        "display_text":  {"type": "string", "description": "everything legible on screen, verbatim"},
+        "legible":       {"type": "boolean"},
+        "confidence":    {"type": "string", "enum": ["high", "medium", "low"]},
+        "notes":         {"type": "string", "description": "one short sentence on anything uncertain"},
+    },
+    "required": ["temperature", "time_text", "day_text", "flame_on", "fan_on", "ch_icon", "dhw_icon",
+                 "boiler_pump", "ch_pump", "dhw_pump", "sun_icon", "house_icon", "snowflake_icon",
+                 "info_icon", "wrench_icon", "comm_icon", "cascade_text", "error_codes", "display_text",
+                 "legible", "confidence", "notes"],
+    "additionalProperties": False,
 }
-If the screen is off or unreadable, set legible=false and all icon booleans false."""
 
 ZONE_PROMPT = """These two images show a Taco SR504-EXP zone switching relay. The first
 is the full scene; the second is a zoomed crop of the status LED column.
@@ -90,53 +113,89 @@ The LEDs, top to bottom, are: POWER, ZONE 1, ZONE 2, ZONE 3, ZONE 4/PRIORITY.
 IMPORTANT: light bleeds between adjacent LEDs, so a faint coloured glow does NOT mean a
 LED is on. A LED is ON only if it has a BRIGHT, near-white saturated CORE (the centre
 looks white-hot / blown-out). A dim coloured dot with no bright core is OFF (that colour
-is just bleed or ambient reflection).
+is just bleed or ambient reflection). Report each LED."""
 
-Report ONLY whether POWER and ZONE 1/2/3 are on. Return ONLY a JSON object:
-{
-  "power": true/false,
-  "zone1": true/false,
-  "zone2": true/false,
-  "zone3": true/false,
-  "notes": "<brief: which LEDs had a bright core vs only bleed>"
-}"""
+ZONE_SCHEMA = {
+    "type": "object",
+    "properties": {k: {"type": "boolean"} for k in ("power", "zone1", "zone2", "zone3", "zone4")},
+    "required": ["power", "zone1", "zone2", "zone3", "zone4", "notes"],
+    "additionalProperties": False,
+}
+ZONE_SCHEMA["properties"]["notes"] = {"type": "string"}
 
 
 def log(*a): print(time.strftime("%H:%M:%S"), *a, flush=True)
 
 
-def b64_image(path, crop=None, zoom=1):
+def b64_image(path, crop=None, zoom=1, width=None):
+    """JPEG-encode a (cropped / zoomed / downscaled) view of an image as base64."""
+    import io
     img = Image.open(path).convert("RGB")
     if crop:
         img = img.crop(crop)
     if zoom != 1:
-        img = img.resize((img.width * zoom, img.height * zoom))
-    import io
-    buf = io.BytesIO(); img.save(buf, "JPEG", quality=92)
-    return base64.standard_b64encode(buf.getvalue()).decode()
+        img = img.resize((img.width * zoom, img.height * zoom), Image.LANCZOS)
+    if width and img.width > width:
+        img = img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)
+    buf = io.BytesIO(); img.save(buf, "JPEG", quality=90)
+    return "image/jpeg", base64.standard_b64encode(buf.getvalue()).decode()
 
 
-def analyze(client, model, prompt, images):
-    """images: list of base64 JPEG strings. Returns parsed JSON dict (or {_error:...})."""
-    content = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": d}}
-               for d in images]
+def b64_file(path):
+    """A file already on disk (PNG/JPEG), as (media_type, base64)."""
+    mt = "image/png" if path.lower().endswith(".png") else "image/jpeg"
+    return mt, base64.standard_b64encode(open(path, "rb").read()).decode()
+
+
+def analyze(client, model, prompt, images, schema):
+    """images: list of (media_type, base64). Structured output (JSON schema) so the reply
+    is always valid JSON. Returns (dict, usage) - dict has _error on failure."""
+    content = [{"type": "image", "source": {"type": "base64", "media_type": mt, "data": d}}
+               for mt, d in images]
     content.append({"type": "text", "text": prompt})
+    usage = {}
     try:
         resp = client.messages.create(
             model=model, max_tokens=1024,
-            output_config={"effort": "low"},
+            output_config={"effort": "low", "format": {"type": "json_schema", "schema": schema}},
             messages=[{"role": "user", "content": content}],
         )
+        u = resp.usage
+        usage = {"model": model, "input": u.input_tokens, "output": u.output_tokens,
+                 "cache_read": getattr(u, "cache_read_input_tokens", 0) or 0}
         if resp.stop_reason == "refusal":
-            return {"_error": "refusal", "_detail": getattr(resp.stop_details, "category", None)}
+            return {"_error": "refusal", "_detail": getattr(resp.stop_details, "category", None)}, usage
         text = "".join(b.text for b in resp.content if b.type == "text").strip()
-        if text.startswith("```"):
-            text = text.split("```", 2)[1].lstrip("json").strip()
-        return json.loads(text)
+        return json.loads(text), usage
     except json.JSONDecodeError:
-        return {"_error": "unparseable", "_raw": text[:300]}
+        return {"_error": "unparseable", "_raw": text[:300]}, usage
     except Exception as e:
-        return {"_error": type(e).__name__, "_detail": str(e)[:200]}
+        return {"_error": type(e).__name__, "_detail": str(e)[:200]}, usage
+
+
+def led_metrics(path):
+    """Per-LED pixel stats from the full frame: fraction of 'white core' pixels and mean
+    brightness inside a small disc at each LED's fixed position."""
+    im = Image.open(path).convert("RGB"); px = im.load(); out = {}
+    r2 = LED_RADIUS * LED_RADIUS
+    for name, (cx, cy) in ZONE_LEDS.items():
+        n = w = 0; tot = 0.0
+        for x in range(cx - LED_RADIUS, cx + LED_RADIUS + 1):
+            for y in range(cy - LED_RADIUS, cy + LED_RADIUS + 1):
+                if (x - cx) ** 2 + (y - cy) ** 2 > r2: continue
+                if not (0 <= x < im.width and 0 <= y < im.height): continue
+                r, g, b = px[x, y]; n += 1; tot += (r + g + b) / 3
+                if min(r, g, b) >= LED_WHITE_MIN: w += 1
+        out[name] = {"white": round(w / n, 3) if n else 0.0, "mean": round(tot / n) if n else 0}
+    return out
+
+
+def zone_from_pixels(m):
+    """Deterministic LED verdicts + whether any LED is in the ambiguous band."""
+    reading = {k: m[k]["white"] >= LED_ON_FRAC for k in ZONE_LEDS}
+    lo, hi = LED_AMBIGUOUS
+    ambiguous = [k for k in ZONE_LEDS if lo <= m[k]["white"] <= hi]
+    return reading, ambiguous
 
 
 # ------------------------------------------------------------------ alerting
@@ -177,7 +236,7 @@ def send_sms(body):
 def derive_mode(r):
     """Deterministically map the individual icon booleans to a single mode label.
     Flame is reported separately (flame_on); a mode can be active with the burner
-    between cycles. Priority: storage > dhw > heating > idle."""
+    between cycles. Priority: dhw > heating > idle."""
     if not isinstance(r, dict) or r.get("legible") is False:
         return "unknown"
     if r.get("dhw_icon"):
@@ -280,30 +339,53 @@ def evaluate_and_alert(result, out):
     result["alert"] = {"problems": probs, "sent": sent, "throttled": bool(sig) and not sent}
 
 
-def cycle(client, model, out):
+def cycle(client, model, out, zone_llm="auto"):
     os.makedirs(out, exist_ok=True)
     result = {"timestamp": datetime.now(timezone.utc).isoformat(),
               "local": datetime.now().isoformat(timespec="seconds")}
 
-    # --- Boiler ---
+    # --- Boiler: legend drawing + small context frame + 3x LCD zoom -> Claude (structured) ---
     try:
         p = cap.grab_once(out, cap.CAMERAS["boiler"], name="boiler", opts={"frames": 8, "sharpen": True, "quality": 95})
-        imgs = [b64_image(p), b64_image(p, crop=BOILER_DISPLAY_CROP, zoom=3)]
-        reading = analyze(client, model, BOILER_PROMPT, imgs)
+        imgs = []
+        if os.path.exists(LEGEND_IMAGE):
+            imgs.append(b64_file(LEGEND_IMAGE))
+        imgs += [b64_image(p, width=FULL_FRAME_WIDTH), b64_image(p, crop=BOILER_DISPLAY_CROP, zoom=3)]
+        reading, usage = analyze(client, model, BOILER_PROMPT, imgs, BOILER_SCHEMA)
         if isinstance(reading, dict) and not reading.get("_error"):
+            reading["pump_on"] = bool(reading.get("boiler_pump") or reading.get("ch_pump") or reading.get("dhw_pump"))
             reading["mode"] = derive_mode(reading)
-        result["boiler"] = {"image": os.path.basename(p), "reading": reading}
+        result["boiler"] = {"image": os.path.basename(p), "reading": reading, "usage": usage}
         log("boiler:", json.dumps(reading))
     except Exception as e:
         result["boiler"] = {"_error": str(e)}
         log("boiler capture failed:", e)
 
-    # --- Zone controller (full frame + zoomed LED crop) ---
+    # --- Zone controller: pixels first; Claude only if ambiguous / panel dark / forced ---
     try:
         p = cap.grab_once(out, cap.CAMERAS["zone"], name="zone", opts={"frames": 8, "sharpen": False, "quality": 95})
-        imgs = [b64_image(p), b64_image(p, crop=ZONE_LED_CROP, zoom=4)]
-        result["zone"] = {"image": os.path.basename(p), "reading": analyze(client, model, ZONE_PROMPT, imgs)}
-        log("zone:  ", json.dumps(result["zone"]["reading"]))
+        m = led_metrics(p)
+        px_reading, ambiguous = zone_from_pixels(m)
+        need_llm = (zone_llm == "always") or (zone_llm == "auto" and (ambiguous or not px_reading["power"]))
+        entry = {"image": os.path.basename(p), "pixels": m}
+        if need_llm:
+            imgs = [b64_image(p, width=FULL_FRAME_WIDTH), b64_image(p, crop=ZONE_LED_CROP, zoom=4)]
+            llm, usage = analyze(client, model, ZONE_PROMPT, imgs, ZONE_SCHEMA)
+            entry["usage"] = usage
+            if isinstance(llm, dict) and not llm.get("_error"):
+                llm["method"] = "claude"
+                llm["pixel_verdict"] = px_reading
+                llm["why_llm"] = ("ambiguous:" + ",".join(ambiguous)) if ambiguous else ("forced" if zone_llm == "always" else "power LED dark")
+                entry["reading"] = llm
+            else:
+                px_reading["method"] = "pixels"; px_reading["notes"] = "Claude fallback failed: " + str(llm)
+                entry["reading"] = px_reading
+        else:
+            px_reading["method"] = "pixels"
+            px_reading["notes"] = "white-core fraction per LED: " + ", ".join(f"{k} {m[k]['white']:.2f}" for k in ZONE_LEDS)
+            entry["reading"] = px_reading
+        result["zone"] = entry
+        log("zone:  ", json.dumps(entry["reading"]))
     except Exception as e:
         result["zone"] = {"_error": str(e)}
         log("zone capture failed:", e)
@@ -323,6 +405,9 @@ def main():
     ap.add_argument("--interval", type=int, default=3600, help="seconds between cycles (default 3600 = 1h)")
     ap.add_argument("--once", action="store_true", help="run a single cycle and exit")
     ap.add_argument("--model", default=MODEL_DEFAULT)
+    ap.add_argument("--zone-llm", choices=["auto", "always", "never"], default="auto",
+                    help="zone LEDs: 'auto' = pixels, Claude only when ambiguous (default); "
+                         "'always' = also ask Claude every cycle; 'never' = pixels only")
     ap.add_argument("--debug", action="store_true")
     a = ap.parse_args()
     cap.DEBUG = a.debug
@@ -336,7 +421,7 @@ def main():
     log(f"monitor started (model={a.model}, interval={a.interval}s, out={a.out})")
     while True:
         try:
-            cycle(client, a.model, a.out)
+            cycle(client, a.model, a.out, zone_llm=a.zone_llm)
         except Exception:
             log("cycle error:\n" + traceback.format_exc())
         if a.once:
