@@ -142,7 +142,7 @@
     <h2>Readings <span class="sub">(click a row for the full detail)</span></h2>
     <div class="tbl-wrap"><table><thead><tr>
       <th>Time</th><th>Temp</th><th>Mode</th><th>Flame</th><th>Fan</th><th>Pumps B·CH·DHW</th><th>Errors</th>
-      <th>Pwr</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Zone via</th><th>Tokens</th>
+      <th>Pwr</th><th>Z1</th><th>Z2</th><th>Z3</th><th>Z4</th><th>Zone via</th><th>Model</th><th>Tokens</th>
     </tr></thead><tbody id="tbody"></tbody></table></div>
   </div>
 
@@ -174,6 +174,7 @@ function parseLine(o){
     power:tri(z.power), z1:tri(z.zone1), z2:tri(z.zone2), z3:tri(z.zone3), z4:tri(z.zone4),
     zmethod:z.method||(("power" in z)?"claude":null), znotes:z.notes||"", zwhy:z.why_llm||"", zpx:Z.pixels||null,
     tokens:(bu.input||0)+(bu.output||0)+(zu.input||0)+(zu.output||0), model:bu.model||zu.model||"",
+    confirm:(b.first_pass&&bu.confirm_model)?bu.confirm_model:"", firstPass:b.first_pass||null, zmodel:zu.model||"",
     berr:B._error||b._error||null, zerr:Z._error||z._error||null,
     alert:o.alert||null, raw:o,
     hasB:("legible" in b)||("temperature" in b), hasZ:("power" in z) };
@@ -327,7 +328,8 @@ function wireHover(host, xlo, xhi){
       `${r.codes.length?' · <b style="color:#ff3b30">'+r.codes.join(",")+'</b>':''}<br>`+
       `Pumps: boiler ${P3(r.bpump)} · CH ${P3(r.cpump)} · DHW ${P3(r.dpump)}<br>`+
       `Zones: pwr ${P3(r.power)} · Z1 ${P3(r.z1)} · Z2 ${P3(r.z2)} · Z3 ${P3(r.z3)} · Z4 ${P3(r.z4)}`+
-      `${r.zmethod?' <span style="color:#9aa0a6">('+r.zmethod+')</span>':''}`;
+      `${r.zmethod?' <span style="color:#9aa0a6">('+r.zmethod+')</span>':''}`+
+      `${r.model?'<br><span style="color:#9aa0a6">model: '+modelCell(r)+'</span>':''}`;
     tip.style.display="block";
     let tx=Math.max(xlo, Math.min(xhi, best.x)); tip.style.left=tx+"px"; tip.style.top="2px";
   }
@@ -394,9 +396,12 @@ function renderStats(rows){
     S("Coverage", cov+"%", `${got} of ~${expected} hourly readings`) +
     S("Temp range", temps.length?`${Math.min(...temps)}–${Math.max(...temps)}°F`:"—", "in window") +
     S("Burner firing", `${fire}/${got}`, `heat call ${heat} · DHW call ${dhw}`) +
-    S("API tokens", tok.toLocaleString(), (last.model||"")+" · in window");
+    S("API tokens", tok.toLocaleString(), "in window · latest read by "+shortModel(last.model));
 }
 
+const shortModel = m => m ? m.replace(/^claude-/,"").replace(/-(\d)-(\d)$/,(_,a,b)=>` ${a}.${b}`).replace(/^\w/,c=>c.toUpperCase()) : "—";
+const modelCell = r => { if(!r.model) return "—";
+  let t=shortModel(r.model); if(r.confirm) t+=` → ${shortModel(r.confirm)}`; if(r.zmodel&&r.zmethod==="claude") t+=` · zone ${shortModel(r.zmodel)}`; return t; };
 const D = v => v===null?'<i class="dot unk" title="not captured"></i>' : v?'<i class="dot on"></i>':'<i class="dot"></i>';
 function renderTable(rows){
   const esc = s => String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
@@ -410,6 +415,7 @@ function renderTable(rows){
       r.text?`<b>Screen:</b> ${esc(r.text)}`:"",
       r.bnotes?`<b>Boiler notes:</b> ${esc(r.bnotes)}`:"",
       r.conf?`<b>Confidence:</b> ${r.conf}`:"",
+      r.firstPass?`<b>First pass (${esc(shortModel(r.firstPass.model))}, ${esc(r.firstPass.why_confirmed||"")}):</b> ${esc(r.firstPass.temperature??"—")}, conf ${esc(r.firstPass.confidence||"—")}, dhw ${r.firstPass.dhw_icon?"Y":"n"}, ch ${r.firstPass.ch_icon?"Y":"n"}, flame ${r.firstPass.flame_on?"Y":"n"}, errors ${esc((r.firstPass.error_codes||[]).join(",")||"none")} → confirmed by ${esc(shortModel(r.confirm))}`:"",
       [r.sun&&"sun",r.house&&"house",r.snow&&"snowflake",r.info&&"[i]",r.wrench&&"wrench",r.comm&&"((o))"].filter(Boolean).length?`<b>Icons:</b> ${[r.sun&&"sun",r.house&&"house",r.snow&&"snowflake",r.info&&"[i]",r.wrench&&"wrench",r.comm&&"((o))"].filter(Boolean).join(", ")}`:"",
       r.znotes?`<b>Zone notes:</b> ${esc(r.znotes)}`:"",
       r.zpx?`<b>LED white-core %:</b> ${Object.entries(r.zpx).map(([k,v])=>k+" "+Math.round(v.white*100)).join(" · ")}`:"",
@@ -422,9 +428,9 @@ function renderTable(rows){
       <td>${r.flame===null?D(null):r.flame?'🔥':'·'}</td><td>${D(r.fan)}</td><td>${pumps}</td>
       <td>${r.codes.length?'<span class="pill bad">'+r.codes.join(", ")+'</span>':'—'}</td>
       <td>${D(r.power)}</td><td>${D(r.z1)}</td><td>${D(r.z2)}</td><td>${D(r.z3)}</td><td>${D(r.z4)}</td>
-      <td class="sub">${r.zmethod||"—"}</td><td class="num sub">${r.tokens?r.tokens.toLocaleString():"—"}</td></tr>
-      <tr class="det" data-i="${i}" hidden><td colspan="14">${det}</td></tr>`;
-  }).join("") || `<tr><td colspan="14" class="empty">No readings yet.</td></tr>`;
+      <td class="sub">${r.zmethod||"—"}</td><td class="sub">${modelCell(r)}</td><td class="num sub">${r.tokens?r.tokens.toLocaleString():"—"}</td></tr>
+      <tr class="det" data-i="${i}" hidden><td colspan="15">${det}</td></tr>`;
+  }).join("") || `<tr><td colspan="15" class="empty">No readings yet.</td></tr>`;
 }
 $("tbody").addEventListener("click", e=>{
   const tr=e.target.closest("tr.main"); if(!tr) return;

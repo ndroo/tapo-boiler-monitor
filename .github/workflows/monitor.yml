@@ -44,7 +44,9 @@ jobs:
           TWILIO_API_KEY_SECRET: ${{ secrets.TWILIO_API_KEY_SECRET }}
           TWILIO_FROM:           ${{ secrets.TWILIO_FROM }}
           ALERT_TO:              ${{ secrets.ALERT_TO }}
-        run: python monitor.py --once
+        # Primary model: Sonnet 5.5 (10/10 on the 2026-10-16 benchmark, half the cost of Opus).
+        # Low-confidence / error / unreadable frames are re-read on Opus (--confirm-model default).
+        run: python monitor.py --once --model claude-sonnet-5-5
 
       - name: Trim logs to the last 2000 lines
         run: |
