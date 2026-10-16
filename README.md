@@ -15,6 +15,21 @@ Every 30 minutes it:
 4. Commits the latest images + `readings.jsonl` back to the repo, and a small dashboard
    (`index.html`) shows the live state.
 
+## Outdoor weather (every 15 minutes, free)
+
+`weather_monitor.py` logs the outdoor temperature for the property from
+[Open-Meteo](https://open-meteo.com) (no API key). The address is the single setting
+`PROPERTY_ADDRESS` (env var, set in `loop.yml`; default `180 Beatrice St, Toronto, Ontario, Canada`).
+It is geocoded once with Nominatim and cached in `stills/weather_geo.json`; change the address and
+the next run re-geocodes. Hourly observations for the last 7 days are merged into
+`stills/weather.jsonl` on every run (so a missed run never leaves a hole) and the current
+conditions go to `stills/weather_latest.json`. The dashboard draws them as the "Outdoor (°C)"
+panel on the timeline and the "Outdoor now" tile.
+
+All temperatures on the dashboard are shown in °C (the ecobee API and the boiler LCD log °F;
+conversion happens in the page). A zone counts as **healthy** while its room temperature is
+within 2 °C below its set-point; offline thermostats are shown but not counted.
+
 ## ecobee thermostats (every 15 minutes, free)
 
 `ecobee_monitor.py` logs every thermostat on the account (temperature vs. heat set-point,

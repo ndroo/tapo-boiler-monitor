@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # loop.sh - the body of the monitor-loop workflow. Runs for LOOP_MINUTES, polling ecobee
-# every 15 minutes and the cameras every 30 minutes, committing results after each cycle.
+# (and outdoor weather) every 15 minutes and the cameras every 30 minutes, committing results after each cycle.
 # Safe to run locally too (needs the same env vars / .env as the two monitors).
 set -u
 LOOP_MINUTES="${LOOP_MINUTES:-330}"
@@ -19,7 +19,8 @@ commit_results() {
   done
   [ -f stills/ecobee.jsonl ] && tail -n 10000 stills/ecobee.jsonl > stills/ecobee.jsonl.tmp && mv stills/ecobee.jsonl.tmp stills/ecobee.jsonl
   for f in stills/boiler_latest.jpg stills/zone_latest.jpg stills/readings.jsonl stills/readings_latest.json \
-           stills/alert_state.json stills/alerts.jsonl stills/ecobee.jsonl stills/ecobee_latest.json ecobee_token.enc; do
+           stills/alert_state.json stills/alerts.jsonl stills/ecobee.jsonl stills/ecobee_latest.json ecobee_token.enc \
+           stills/weather.jsonl stills/weather_latest.json stills/weather_geo.json; do
     [ -f "$f" ] && git add -f "$f"
   done
   if git diff --cached --quiet; then return 0; fi
@@ -36,7 +37,8 @@ while [ "$(date +%s)" -lt "$end" ]; do
   now=$(date +%s); did=""
   if [ $((now - last_eco)) -ge $ECO_EVERY ]; then
     python ecobee_monitor.py --once || echo "ecobee cycle failed (continuing)"
-    last_eco=$now; did="ecobee"
+    python weather_monitor.py --once || echo "weather cycle failed (continuing)"
+    last_eco=$now; did="ecobee+weather"
   fi
   if [ $((now - last_cam)) -ge $CAM_EVERY ]; then
     python monitor.py --once --model "$CAMERA_MODEL" || echo "camera cycle failed (continuing)"

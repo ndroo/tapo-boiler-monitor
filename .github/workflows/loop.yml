@@ -2,7 +2,7 @@ name: monitor-loop
 
 # GitHub's cron is unreliable for this repo (it fired 2 of 12 slots on 2026-10-16), so the
 # steady-state scheduler is this self-chaining job: one run loops for ~5.5 h doing the
-# ecobee poll every 15 min and the camera capture every 30 min, committing after each
+# ecobee + outdoor-weather poll every 15 min and the camera capture every 30 min, committing after each
 # cycle, then dispatches its own successor (workflow_dispatch IS allowed from GITHUB_TOKEN).
 # The hourly cron below is only a backstop that restarts the chain if a run ever dies.
 on:
@@ -58,6 +58,8 @@ jobs:
           ECOBEE_TOTP_SECRET:    ${{ secrets.ECOBEE_TOTP_SECRET }}
           LOOP_MINUTES:          ${{ github.event.inputs.minutes || '330' }}
           CAMERA_MODEL:          claude-sonnet-5-5
+          # Outdoor weather (Open-Meteo, free) is pulled for this address; geocoded once and cached.
+          PROPERTY_ADDRESS:      "180 Beatrice St, Toronto, Ontario, Canada"
         run: bash loop.sh
       - name: Dispatch the next run
         if: always() && (github.event.inputs.chain || 'yes') == 'yes'
