@@ -129,7 +129,7 @@
         <tr><td>Claude Haiku 5.5</td><td>7/10</td><td class="ok">10/10</td><td>3/10</td><td class="ok">5/5</td><td>none</td><td class="ok">10/10</td><td>$0.0005</td></tr>
       </tbody>
     </table></div>
-    <p class="sub">No frame in the set showed a DHW call or the burner firing, so those states are unverified for every model. Because the one Opus miss was self-rated low confidence, the monitor now re-reads any low-confidence, error-code, or unreadable frame with a second pass at medium effort before trusting it. The zone fallback is pinned to Opus.</p>
+    <p class="sub">No frame in the set showed a DHW call or the burner firing, so those states are unverified for every model. Because the one Opus miss was self-rated low confidence, the monitor runs Sonnet 5.5 as the primary and re-reads a frame on Opus 5.5 at medium effort whenever it shows an error code, is unreadable, or is low-confidence and would change the state (flame, DHW, heating, or a 15°F jump) compared with the previous reading. The zone fallback is pinned to Opus. The Model column in the readings table shows which model produced each row and when a confirmation ran.</p>
   </div>
 
   <div class="card">

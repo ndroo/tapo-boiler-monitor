@@ -56,9 +56,10 @@ python3 grab_boiler_cloud.py --camera zone   # just grab a still
   this volume (public repo).
 - The only real cost is the Claude API: one boiler read per hour (~$0.018 on Opus 5.5,
   ~$13/month; ~$0.009 on Sonnet 5.5, which scored 10/10 on the 2026-10-16 benchmark, see
-  `legend.html`). Zone LEDs are read from pixels at no cost. Low-confidence / error /
-  unreadable boiler frames get a second read on `--confirm-model` (default Opus). Switch
-  the primary with `--model claude-sonnet-5-5` in `.github/workflows/monitor.yml`.
+  `legend.html`). Zone LEDs are read from pixels at no cost. The workflow runs Sonnet 5.5
+  as the primary; a frame gets a second read on `--confirm-model` (default Opus, medium
+  effort) when it shows an error code, is unreadable, or is low-confidence AND would change
+  state (flame / DHW / heating icon, or a >=15F jump) versus the previous reading.
 
 ## Notes
 

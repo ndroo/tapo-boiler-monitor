@@ -346,10 +346,41 @@ def evaluate_and_alert(result, out):
     result["alert"] = {"problems": probs, "sent": sent, "throttled": bool(sig) and not sent}
 
 
-def needs_confirmation(r):
+STATE_KEYS = ("flame_on", "dhw_icon", "ch_icon")
+
+
+def needs_confirmation(r, prev=None):
+    """Why (or '' if not) a boiler reading deserves a second-model read.
+    Always: an error code or an unreadable screen (both would alert).
+    Low confidence: only when the reading would CHANGE state versus the previous
+    reading (flame / DHW / heating icons, or temperature by >= 15F), so an hourly
+    'same as before, but blurry' frame doesn't double the cost."""
     if not isinstance(r, dict) or r.get("_error"):
-        return False
-    return (r.get("confidence") == "low") or bool(r.get("error_codes")) or (r.get("legible") is False)
+        return ""
+    if r.get("error_codes"):
+        return "error code"
+    if r.get("legible") is False:
+        return "unreadable"
+    if r.get("confidence") == "low":
+        if not isinstance(prev, dict) or prev.get("_error") or prev.get("legible") is False:
+            return "low confidence, no previous reading"
+        changed = [k for k in STATE_KEYS if bool(r.get(k)) != bool(prev.get(k))]
+        try:
+            import re
+            a = float(re.search(r"-?\d+", str(r.get("temperature"))).group()); b = float(re.search(r"-?\d+", str(prev.get("temperature"))).group())
+            if abs(a - b) >= 15: changed.append("temperature")
+        except Exception:
+            pass
+        if changed:
+            return "low confidence + state change (" + ", ".join(changed) + ")"
+    return ""
+
+
+def previous_boiler_reading(out):
+    try:
+        return json.load(open(os.path.join(out, "readings_latest.json"))).get("boiler", {}).get("reading")
+    except Exception:
+        return None
 
 
 def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAULT):
@@ -365,9 +396,11 @@ def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAU
             imgs.append(b64_file(LEGEND_IMAGE))
         imgs += [b64_image(p, width=FULL_FRAME_WIDTH), b64_image(p, crop=BOILER_DISPLAY_CROP, zoom=3)]
         reading, usage = analyze(client, model, BOILER_PROMPT, imgs, BOILER_SCHEMA)
-        if confirm_model and needs_confirmation(reading):
-            why = "low confidence" if reading.get("confidence") == "low" else ("error code" if reading.get("error_codes") else "unreadable")
-            log(f"boiler: first pass ({model}) is {why} -> confirming with {confirm_model}")
+        why = needs_confirmation(reading, previous_boiler_reading(out)) if confirm_model else ""
+        if isinstance(reading, dict) and reading.get("confidence") == "low" and not why:
+            log(f"boiler: first pass ({model}) low confidence but same state as last reading -> no confirmation")
+        if why:
+            log(f"boiler: first pass ({model}): {why} -> confirming with {confirm_model}")
             second, u2 = analyze(client, confirm_model, BOILER_PROMPT, imgs, BOILER_SCHEMA, effort="medium")
             if isinstance(second, dict) and not second.get("_error"):
                 second["first_pass"] = {"model": model, "why_confirmed": why,
