@@ -125,19 +125,25 @@ def analyze(client, model, prompt, images):
 
 # ------------------------------------------------------------------ alerting
 def send_sms(body):
-    """Send an SMS via Twilio's REST API (no SDK needed). No-op if env not set."""
-    sid = os.environ.get("TWILIO_ACCOUNT_SID")
-    tok = os.environ.get("TWILIO_AUTH_TOKEN")
+    """Send an SMS via Twilio's REST API (no SDK needed). No-op if env not set.
+
+    Supports either auth style:
+      - Account SID (AC...) + Auth Token, or
+      - an API Key (SK...) + its secret  (TWILIO_API_KEY_SID / TWILIO_API_KEY_SECRET).
+    TWILIO_ACCOUNT_SID (the AC... id) is always required - it's in the request URL."""
+    account = os.environ.get("TWILIO_ACCOUNT_SID")                       # AC... -> URL path
+    user = os.environ.get("TWILIO_API_KEY_SID") or account              # SK... or AC...
+    pw = os.environ.get("TWILIO_API_KEY_SECRET") or os.environ.get("TWILIO_AUTH_TOKEN")
     frm = os.environ.get("TWILIO_FROM")
     to = os.environ.get("ALERT_TO")
-    if not all([sid, tok, frm, to]):
+    if not all([account, user, pw, frm, to]):
         log("SMS not sent (Twilio env not fully set). Would have sent:", body)
         return False
     try:
         r = requests.post(
-            f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+            f"https://api.twilio.com/2010-04-01/Accounts/{account}/Messages.json",
             data={"From": frm, "To": to, "Body": body[:1500]},
-            auth=(sid, tok), timeout=20,
+            auth=(user, pw), timeout=20,
         )
         if r.status_code < 300:
             log("SMS sent:", body)
@@ -177,8 +183,14 @@ def save_state(out, state):
         json.dump(state, f, indent=2)
 
 
+# Don't text about a failure more than once per 24h... unless an OK ("pass") cycle
+# happened in between, in which case a fresh failure re-alerts right away.
+ALERT_MIN_INTERVAL = 24 * 3600
+
+
 def evaluate_and_alert(result, out):
-    """Decide if anything is wrong with the boiler and text once per state change."""
+    """Decide if anything is wrong with the boiler and text, respecting the 24h /
+    pass-between-failures throttle."""
     state = load_state(out)
     boiler = result.get("boiler", {})
     probs = boiler_problems(boiler.get("reading", {}))
@@ -192,15 +204,30 @@ def evaluate_and_alert(result, out):
         probs.append(f"boiler camera unreachable for {state['cap_fail']} cycles")
 
     sig = " | ".join(sorted(probs))
-    last = state.get("sig", "")
     when = result.get("local", "")
-    if sig and sig != last:
-        send_sms(f"⚠️ Boiler monitor: {sig}. ({when})")
-    elif not sig and last:
-        send_sms(f"✅ Boiler monitor: previous issue cleared, now normal. ({when})")
+    now = time.time()
+    sent = False
+
+    if sig:  # something is wrong
+        last_ts = state.get("last_alert_ts")
+        passed = state.get("pass_since_alert", False)   # an OK cycle since the last alert
+        stale = last_ts is not None and (now - last_ts) >= ALERT_MIN_INTERVAL
+        if last_ts is None or passed or stale:
+            sent = send_sms(f"⚠️ Boiler monitor: {sig}. ({when})")
+            state["last_alert_ts"] = now
+            state["alerted_open"] = True
+            state["pass_since_alert"] = False
+        else:
+            log(f"alert suppressed (within 24h, no pass since last): {sig}")
+    else:    # OK cycle == a "pass"
+        if state.get("alerted_open"):
+            send_sms(f"✅ Boiler monitor: previous issue cleared, now normal. ({when})")
+        state["alerted_open"] = False
+        state["pass_since_alert"] = True
+
     state["sig"] = sig
     save_state(out, state)
-    result["alert"] = {"problems": probs, "changed": sig != last}
+    result["alert"] = {"problems": probs, "sent": sent, "throttled": bool(sig) and not sent}
 
 
 def cycle(client, model, out):

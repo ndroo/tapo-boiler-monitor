@@ -23,10 +23,16 @@ Each hour it:
 | `TPLINK_PASSWORD` | TP-Link / Tapo account password |
 | `TPLINK_TERMINAL_UUID` | a stable client UUID (any value works; reuse one to keep sessions consistent) |
 | `ANTHROPIC_API_KEY` | Claude API key for the vision analysis |
-| `TWILIO_ACCOUNT_SID` | Twilio account SID (for SMS alerts) |
-| `TWILIO_AUTH_TOKEN` | Twilio auth token |
+| `TWILIO_ACCOUNT_SID` | Twilio **Account** SID (`AC...`) — always required, used in the request URL |
+| `TWILIO_AUTH_TOKEN` | Twilio auth token *(classic auth — omit if using an API key below)* |
+| `TWILIO_API_KEY_SID` | Twilio API Key SID (`SK...`) *(use instead of the auth token)* |
+| `TWILIO_API_KEY_SECRET` | the API Key's secret |
 | `TWILIO_FROM` | your Twilio phone number, e.g. `+1512...` |
-| `ALERT_TO` | the phone number to text, e.g. `+1737...` |
+| `ALERT_TO` | the phone number to text, e.g. `+1647...` |
+
+Authenticate with **either** `TWILIO_AUTH_TOKEN` (classic) **or** the
+`TWILIO_API_KEY_SID` + `TWILIO_API_KEY_SECRET` pair. `TWILIO_ACCOUNT_SID` is required
+either way.
 
 The Twilio secrets are optional — without them, capture + analysis still run and alerts are
 just logged instead of texted.

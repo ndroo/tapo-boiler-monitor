@@ -37,11 +37,13 @@ jobs:
           TPLINK_EMAIL:         ${{ secrets.TPLINK_EMAIL }}
           TPLINK_PASSWORD:      ${{ secrets.TPLINK_PASSWORD }}
           TPLINK_TERMINAL_UUID: ${{ secrets.TPLINK_TERMINAL_UUID }}
-          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
-          TWILIO_ACCOUNT_SID:   ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN:    ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_FROM:          ${{ secrets.TWILIO_FROM }}
-          ALERT_TO:             ${{ secrets.ALERT_TO }}
+          ANTHROPIC_API_KEY:     ${{ secrets.ANTHROPIC_API_KEY }}
+          TWILIO_ACCOUNT_SID:    ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN:     ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_API_KEY_SID:    ${{ secrets.TWILIO_API_KEY_SID }}
+          TWILIO_API_KEY_SECRET: ${{ secrets.TWILIO_API_KEY_SECRET }}
+          TWILIO_FROM:           ${{ secrets.TWILIO_FROM }}
+          ALERT_TO:              ${{ secrets.ALERT_TO }}
         run: python monitor.py --once
 
       - name: Trim readings log to the last 2000 cycles
