@@ -34,6 +34,13 @@ import anthropic
 
 OUT_DEFAULT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "stills")
 MODEL_DEFAULT = "claude-opus-5-5"
+# Second-opinion pass for the boiler: re-read with this model (medium effort) whenever the
+# first pass is low-confidence, shows an error code, or says the screen is unreadable -
+# i.e. exactly the readings that would trigger an alert or a state change. Benchmark on
+# 15 local stills (2026-10-16): Sonnet 5.5 10/10 mode+temp+pumps, Opus 5.5 9/10 (one
+# low-confidence false DHW), Haiku 5.5 7/10 mode + 3/10 pumps.
+CONFIRM_MODEL_DEFAULT = "claude-opus-5-5"
+ZONE_FALLBACK_MODEL = "claude-opus-5-5"   # Sonnet twice called a dark zone-1 LED lit; Opus/Haiku 10/10
 
 # Fixed-view crops (x1,y1,x2,y2) used to give the model a zoomed view of the small
 # indicators. Re-tune if a camera is moved.
@@ -147,7 +154,7 @@ def b64_file(path):
     return mt, base64.standard_b64encode(open(path, "rb").read()).decode()
 
 
-def analyze(client, model, prompt, images, schema):
+def analyze(client, model, prompt, images, schema, effort="low"):
     """images: list of (media_type, base64). Structured output (JSON schema) so the reply
     is always valid JSON. Returns (dict, usage) - dict has _error on failure."""
     content = [{"type": "image", "source": {"type": "base64", "media_type": mt, "data": d}}
@@ -157,7 +164,7 @@ def analyze(client, model, prompt, images, schema):
     try:
         resp = client.messages.create(
             model=model, max_tokens=1024,
-            output_config={"effort": "low", "format": {"type": "json_schema", "schema": schema}},
+            output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
             messages=[{"role": "user", "content": content}],
         )
         u = resp.usage
@@ -339,7 +346,13 @@ def evaluate_and_alert(result, out):
     result["alert"] = {"problems": probs, "sent": sent, "throttled": bool(sig) and not sent}
 
 
-def cycle(client, model, out, zone_llm="auto"):
+def needs_confirmation(r):
+    if not isinstance(r, dict) or r.get("_error"):
+        return False
+    return (r.get("confidence") == "low") or bool(r.get("error_codes")) or (r.get("legible") is False)
+
+
+def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAULT):
     os.makedirs(out, exist_ok=True)
     result = {"timestamp": datetime.now(timezone.utc).isoformat(),
               "local": datetime.now().isoformat(timespec="seconds")}
@@ -352,6 +365,17 @@ def cycle(client, model, out, zone_llm="auto"):
             imgs.append(b64_file(LEGEND_IMAGE))
         imgs += [b64_image(p, width=FULL_FRAME_WIDTH), b64_image(p, crop=BOILER_DISPLAY_CROP, zoom=3)]
         reading, usage = analyze(client, model, BOILER_PROMPT, imgs, BOILER_SCHEMA)
+        if confirm_model and needs_confirmation(reading):
+            why = "low confidence" if reading.get("confidence") == "low" else ("error code" if reading.get("error_codes") else "unreadable")
+            log(f"boiler: first pass ({model}) is {why} -> confirming with {confirm_model}")
+            second, u2 = analyze(client, confirm_model, BOILER_PROMPT, imgs, BOILER_SCHEMA, effort="medium")
+            if isinstance(second, dict) and not second.get("_error"):
+                second["first_pass"] = {"model": model, "why_confirmed": why,
+                                        **{k: reading.get(k) for k in ("temperature", "confidence", "error_codes", "legible", "dhw_icon", "ch_icon", "flame_on")}}
+                reading = second
+            for k in ("input", "output", "cache_read"):
+                usage[k] = (usage.get(k) or 0) + (u2.get(k) or 0)
+            usage["confirm_model"] = confirm_model
         if isinstance(reading, dict) and not reading.get("_error"):
             reading["pump_on"] = bool(reading.get("boiler_pump") or reading.get("ch_pump") or reading.get("dhw_pump"))
             reading["mode"] = derive_mode(reading)
@@ -370,7 +394,7 @@ def cycle(client, model, out, zone_llm="auto"):
         entry = {"image": os.path.basename(p), "pixels": m}
         if need_llm:
             imgs = [b64_image(p, width=FULL_FRAME_WIDTH), b64_image(p, crop=ZONE_LED_CROP, zoom=4)]
-            llm, usage = analyze(client, model, ZONE_PROMPT, imgs, ZONE_SCHEMA)
+            llm, usage = analyze(client, ZONE_FALLBACK_MODEL, ZONE_PROMPT, imgs, ZONE_SCHEMA)
             entry["usage"] = usage
             if isinstance(llm, dict) and not llm.get("_error"):
                 llm["method"] = "claude"
@@ -405,6 +429,9 @@ def main():
     ap.add_argument("--interval", type=int, default=3600, help="seconds between cycles (default 3600 = 1h)")
     ap.add_argument("--once", action="store_true", help="run a single cycle and exit")
     ap.add_argument("--model", default=MODEL_DEFAULT)
+    ap.add_argument("--confirm-model", default=CONFIRM_MODEL_DEFAULT,
+                    help="re-read low-confidence / error / unreadable boiler frames with this model "
+                         "(medium effort); '' disables")
     ap.add_argument("--zone-llm", choices=["auto", "always", "never"], default="auto",
                     help="zone LEDs: 'auto' = pixels, Claude only when ambiguous (default); "
                          "'always' = also ask Claude every cycle; 'never' = pixels only")
@@ -421,7 +448,7 @@ def main():
     log(f"monitor started (model={a.model}, interval={a.interval}s, out={a.out})")
     while True:
         try:
-            cycle(client, a.model, a.out, zone_llm=a.zone_llm)
+            cycle(client, a.model, a.out, zone_llm=a.zone_llm, confirm_model=a.confirm_model or None)
         except Exception:
             log("cycle error:\n" + traceback.format_exc())
         if a.once:

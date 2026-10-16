@@ -54,8 +54,11 @@ python3 grab_boiler_cloud.py --camera zone   # just grab a still
 
 - Cron runs hourly (`.github/workflows/monitor.yml`). GitHub Actions compute is free at
   this volume (public repo).
-- The only real cost is the Claude API (~a few $/month hourly; use a cheaper model with
-  `--model claude-haiku-5-5` if desired).
+- The only real cost is the Claude API: one boiler read per hour (~$0.018 on Opus 5.5,
+  ~$13/month; ~$0.009 on Sonnet 5.5, which scored 10/10 on the 2026-10-16 benchmark, see
+  `legend.html`). Zone LEDs are read from pixels at no cost. Low-confidence / error /
+  unreadable boiler frames get a second read on `--confirm-model` (default Opus). Switch
+  the primary with `--model claude-sonnet-5-5` in `.github/workflows/monitor.yml`.
 
 ## Notes
 

@@ -119,6 +119,20 @@
   </div>
 
   <div class="card">
+    <h2>Model comparison (2026-10-16)</h2>
+    <p>Every local still (15 boiler frames: 8 heating calls, 2 idle, 5 where the camera was framed on pipes; 10 zone frames) was re-read by three models with the production prompt and legend image. Ground truth was set by eye from the enlarged crops.</p>
+    <div class="wrapx"><table>
+      <thead><tr><th>Model</th><th>Mode</th><th>Temperature</th><th>Pumps</th><th>Off-target frames flagged unreadable</th><th>False positives</th><th>Zone LEDs vs pixel method</th><th>Cost per boiler read</th></tr></thead>
+      <tbody>
+        <tr><td>Claude Sonnet 5.5</td><td class="ok">10/10</td><td class="ok">10/10</td><td class="ok">10/10</td><td class="ok">5/5</td><td>none</td><td>8/10 (twice called a dark Zone 1 lit)</td><td>$0.009</td></tr>
+        <tr><td>Claude Opus 5.5 (default)</td><td>9/10</td><td class="ok">10/10</td><td class="ok">10/10</td><td class="ok">5/5</td><td>1 DHW (house icon misread on a blurry frame, self-rated low confidence)</td><td class="ok">10/10</td><td>$0.018</td></tr>
+        <tr><td>Claude Haiku 5.5</td><td>7/10</td><td class="ok">10/10</td><td>3/10</td><td class="ok">5/5</td><td>none</td><td class="ok">10/10</td><td>$0.0005</td></tr>
+      </tbody>
+    </table></div>
+    <p class="sub">No frame in the set showed a DHW call or the burner firing, so those states are unverified for every model. Because the one Opus miss was self-rated low confidence, the monitor now re-reads any low-confidence, error-code, or unreadable frame with a second pass at medium effort before trusting it. The zone fallback is pinned to Opus.</p>
+  </div>
+
+  <div class="card">
     <h2>Timeline conventions</h2>
     <ul>
       <li>Each reading owns the hour after it, so a bar runs from one capture to the next. Consecutive identical values merge into one bar.</li>
