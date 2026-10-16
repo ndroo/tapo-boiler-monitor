@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-16T15:24:12.025129+00:00",
-  "local": "2026-10-16T15:24:12",
+  "timestamp": "2026-10-16T15:38:08.910936+00:00",
+  "local": "2026-10-16T15:38:08",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,9 +14,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 15:19:11",
+      "last_status": "2026-10-16 15:32:41",
       "hvac_mode": "heat",
-      "temp": 68.1,
+      "temp": 68.2,
       "humidity": 59,
       "set_heat": 68.9,
       "set_cool": 77.9,
@@ -31,7 +31,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 68.1,
+          "temp": 68.2,
           "occupied": false,
           "humidity": 59
         }
@@ -87,7 +87,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 15:23:02",
+      "last_status": "2026-10-16 15:37:17",
       "hvac_mode": "heat",
       "temp": 71.3,
       "humidity": 59,
@@ -120,7 +120,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-16 15:19:37",
+      "last_status": "2026-10-16 15:34:52",
       "hvac_mode": "auto",
       "temp": 69.0,
       "humidity": 63,
@@ -141,7 +141,7 @@
           "name": "Master bedroom",
           "type": "ecobee3_remote_sensor",
           "temp": 69.0,
-          "occupied": false,
+          "occupied": true,
           "humidity": null
         },
         {
@@ -168,7 +168,7 @@
         {
           "name": "152 Strachan Ave",
           "type": "thermostat",
-          "temp": 69.8,
+          "temp": 69.9,
           "occupied": false,
           "humidity": 63
         },
@@ -193,9 +193,9 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-16 15:24:05",
+      "last_status": "2026-10-16 15:34:50",
       "hvac_mode": "off",
-      "temp": 65.3,
+      "temp": 65.1,
       "humidity": 53,
       "set_heat": 66.2,
       "set_cool": 66.2,
@@ -213,7 +213,7 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 65.3,
+          "temp": 65.1,
           "occupied": null,
           "humidity": 53
         }
