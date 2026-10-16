@@ -30,6 +30,11 @@ python3 ecobee_monitor.py login --publish   # email, password (not stored), MFA 
                                             # ECOBEE_TOKEN_KEY GitHub secret, commits + pushes
 ```
 
+To run the login unattended (no prompts), put these in the local, git-ignored `.env` first:
+`ECOBEE_EMAIL=...`, `ECOBEE_PASSWORD=...`, and, if the account uses an authenticator app,
+`ECOBEE_TOTP_SECRET=...` (the base32 seed shown when the authenticator was set up). The
+password and seed are used only for that sign-in and are never written anywhere else.
+
 If ecobee rotates the refresh token, the job re-encrypts and commits `ecobee_token.enc`.
 A password change on the account revokes the token; re-run the login command.
 

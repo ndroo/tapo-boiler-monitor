@@ -12,7 +12,9 @@ Tokens: the refresh token is kept in ecobee_token.enc, encrypted (Fernet) with t
 the ECOBEE_TOKEN_KEY env var / GitHub Secret, so the file can live in the repo and the
 hourly job can rotate it without a personal access token.
 
-  python3 ecobee_monitor.py login          # one-time, interactive: email, password, MFA code
+  python3 ecobee_monitor.py login          # one-time: email, password, MFA code (prompts, or
+                                           # read from .env: ECOBEE_EMAIL / ECOBEE_PASSWORD /
+                                           # ECOBEE_TOTP_SECRET so it can run unattended)
   python3 ecobee_monitor.py --once         # what the GitHub Action runs every 15 minutes
   python3 ecobee_monitor.py --once --show  # also pretty-print the readings
 """
@@ -82,13 +84,19 @@ def cmd_login(a):
         with open(os.path.join(HERE, ".env"), "a") as f:
             f.write(f"\nECOBEE_TOKEN_KEY={key}\n")
         print("Generated a new ECOBEE_TOKEN_KEY and appended it to .env (git-ignored).")
-    email = a.email or input("ecobee.com email: ").strip()
-    password = getpass.getpass("ecobee.com password (not stored): ")
+    email = a.email or os.environ.get("ECOBEE_EMAIL") or input("ecobee.com email: ").strip()
+    password = os.environ.get("ECOBEE_PASSWORD") or getpass.getpass("ecobee.com password (not stored): ")
+    totp_secret = (os.environ.get("ECOBEE_TOTP_SECRET") or "").replace(" ", "")
     eco = Ecobee(config=blank_config(**{ECOBEE_USERNAME: email, ECOBEE_PASSWORD: password}))
     try:
         eco.request_tokens_web()
     except EcobeeAuthMfaRequiredError as e:
-        code = input(f"MFA code ({e.challenge.mfa_type}; authenticator app or SMS): ").strip()
+        if totp_secret and e.challenge.mfa_type == "otp":
+            import pyotp
+            code = pyotp.TOTP(totp_secret).now()
+            print("MFA: generated a TOTP code from ECOBEE_TOTP_SECRET.")
+        else:
+            code = input(f"MFA code ({e.challenge.mfa_type}; authenticator app or SMS): ").strip()
         try:
             eco.submit_mfa_code(e.challenge, code)
         except EcobeeAuthFailedError as err:

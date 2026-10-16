@@ -4,3 +4,4 @@ pillow>=10
 anthropic>=0.125
 python-ecobee-api>=0.4.4
 cryptography>=42
+pyotp>=2.9
