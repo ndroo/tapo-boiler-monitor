@@ -1,0 +1,18 @@
+# Secrets - NEVER commit. Credentials live in GitHub Secrets (cloud) or .env (local).
+.env
+secrets/
+*_login_captured.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Captured stills: keep only the *_latest.jpg (the dashboard + git history stay small);
+# ignore the timestamped per-cycle copies.
+stills/*.jpg
+!stills/*_latest.jpg
+
+# macOS
+.DS_Store

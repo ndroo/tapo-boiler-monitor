@@ -1,0 +1,65 @@
+name: tapo-monitor
+
+# Runs hourly in GitHub's cloud - independent of any laptop. Also runnable on demand
+# from the Actions tab (workflow_dispatch).
+on:
+  schedule:
+    - cron: "7 * * * *"      # every hour at :07 (top-of-hour is the most congested/delayed)
+  workflow_dispatch: {}
+
+# Let the job commit the latest stills + readings back to the repo.
+permissions:
+  contents: write
+
+# Never run two cycles at once.
+concurrency:
+  group: tapo-monitor
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Capture + analyze one cycle
+        env:
+          TPLINK_EMAIL:         ${{ secrets.TPLINK_EMAIL }}
+          TPLINK_PASSWORD:      ${{ secrets.TPLINK_PASSWORD }}
+          TPLINK_TERMINAL_UUID: ${{ secrets.TPLINK_TERMINAL_UUID }}
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          TWILIO_ACCOUNT_SID:   ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN:    ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_FROM:          ${{ secrets.TWILIO_FROM }}
+          ALERT_TO:             ${{ secrets.ALERT_TO }}
+        run: python monitor.py --once
+
+      - name: Trim readings log to the last 2000 cycles
+        run: |
+          if [ -f stills/readings.jsonl ]; then
+            tail -n 2000 stills/readings.jsonl > stills/readings.tmp && mv stills/readings.tmp stills/readings.jsonl
+          fi
+
+      - name: Commit results
+        run: |
+          git config user.name  "tapo-monitor-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f stills/boiler_latest.jpg stills/zone_latest.jpg \
+                     stills/readings.jsonl stills/readings_latest.json \
+                     stills/alert_state.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "readings $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi

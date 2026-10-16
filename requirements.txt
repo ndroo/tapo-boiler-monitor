@@ -1,0 +1,4 @@
+paho-mqtt>=1.6,<3
+requests>=2.28
+pillow>=10
+anthropic>=0.125

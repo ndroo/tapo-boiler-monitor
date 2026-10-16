@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boiler Monitor</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #1a1d24; --fg: #e8eaed; --muted: #9aa0a6;
+    --ok: #34c759; --bad: #ff3b30; --warn: #ff9f0a; --line: #2a2e37;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f3f4f6; --card:#fff; --fg:#1a1d24; --muted:#6b7280; --line:#e5e7eb; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:16px; }
+  .wrap { max-width:860px; margin:0 auto; }
+  h1 { font-size:20px; margin:4px 0 2px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .cards { display:grid; gap:16px; grid-template-columns:1fr; }
+  @media (min-width:680px){ .cards { grid-template-columns:1fr 1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; }
+  .card h2 { font-size:15px; margin:0; padding:12px 14px; border-bottom:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center; }
+  .card img { width:100%; display:block; background:#000; aspect-ratio:16/9; object-fit:cover; }
+  .rows { padding:12px 14px; }
+  .row { display:flex; justify-content:space-between; padding:4px 0;
+    border-bottom:1px dashed var(--line); }
+  .row:last-child { border-bottom:0; }
+  .row .k { color:var(--muted); }
+  .pill { font-size:12px; font-weight:600; padding:2px 9px; border-radius:999px; }
+  .pill.ok { background:rgba(52,199,89,.15); color:var(--ok); }
+  .pill.bad { background:rgba(255,59,48,.15); color:var(--bad); }
+  .pill.warn { background:rgba(255,159,10,.15); color:var(--warn); }
+  .pill.off { background:var(--line); color:var(--muted); }
+  .banner { padding:12px 14px; border-radius:12px; margin-bottom:16px; font-weight:600;
+    display:none; }
+  .banner.ok { display:block; background:rgba(52,199,89,.12); color:var(--ok);
+    border:1px solid rgba(52,199,89,.3); }
+  .banner.bad { display:block; background:rgba(255,59,48,.12); color:var(--bad);
+    border:1px solid rgba(255,59,48,.3); }
+  code { font-size:13px; }
+  .foot { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔥 Boiler Monitor</h1>
+  <div class="sub" id="updated">Loading…</div>
+  <div class="banner" id="banner"></div>
+  <div class="cards">
+    <div class="card">
+      <h2>Boiler <span id="b-mode" class="pill off">—</span></h2>
+      <img id="b-img" alt="boiler" src="stills/boiler_latest.jpg">
+      <div class="rows" id="b-rows"></div>
+    </div>
+    <div class="card">
+      <h2>Zone controller <span id="z-pwr" class="pill off">—</span></h2>
+      <img id="z-img" alt="zone" src="stills/zone_latest.jpg">
+      <div class="rows" id="z-rows"></div>
+    </div>
+  </div>
+  <div class="foot">Auto-refreshes every 5 min · captured hourly by GitHub Actions</div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const pill = (txt, cls) => `<span class="pill ${cls}">${txt}</span>`;
+const bust = () => "?t=" + Date.now();
+
+function rowsFrom(pairs){ return pairs.map(([k,v]) => `<div class="row"><span class="k">${k}</span><span>${v}</span></div>`).join(""); }
+
+async function refresh(){
+  try {
+    const r = await fetch("stills/readings_latest.json" + bust(), {cache:"no-store"});
+    const d = await r.json();
+    $("b-img").src = "stills/boiler_latest.jpg" + bust();
+    $("z-img").src = "stills/zone_latest.jpg" + bust();
+    $("updated").textContent = "Last reading: " + (d.local || d.timestamp || "unknown");
+
+    // Alert banner
+    const probs = (d.alert && d.alert.problems) || [];
+    const banner = $("banner");
+    if (probs.length){ banner.className = "banner bad"; banner.textContent = "⚠️ " + probs.join(" · "); }
+    else { banner.className = "banner ok"; banner.textContent = "✅ All normal"; }
+
+    // Boiler
+    const b = (d.boiler && d.boiler.reading) || {};
+    const mode = (b.mode || "unknown");
+    $("b-mode").textContent = mode;
+    $("b-mode").className = "pill " + (mode==="heating"?"warn": mode==="dhw"?"warn": mode==="idle"?"ok":"off");
+    const codes = (b.error_codes||[]).filter(Boolean);
+    $("b-rows").innerHTML = rowsFrom([
+      ["Temperature", b.temperature ?? "—"],
+      ["Mode", mode],
+      ["Flame", b.flame_on ? pill("firing","warn") : pill("off","off")],
+      ["Error codes", codes.length ? pill(codes.join(", "),"bad") : pill("none","ok")],
+      ["Screen", b.legible===false ? pill("unreadable","bad") : pill("legible","ok")],
+    ]);
+
+    // Zone
+    const z = (d.zone && d.zone.reading) || {};
+    $("z-pwr").textContent = z.power ? "power on" : "power off";
+    $("z-pwr").className = "pill " + (z.power ? "ok" : "bad");
+    const zp = on => on ? pill("ON","ok") : pill("off","off");
+    $("z-rows").innerHTML = rowsFrom([
+      ["Power", zp(z.power)],
+      ["Zone 1", zp(z.zone1)],
+      ["Zone 2", zp(z.zone2)],
+      ["Zone 3", zp(z.zone3)],
+    ]);
+  } catch(e){
+    $("updated").textContent = "Could not load readings yet (" + e + ")";
+  }
+}
+refresh();
+setInterval(refresh, 5*60*1000);
+</script>
+</body>
+</html>
