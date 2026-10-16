@@ -109,7 +109,7 @@
       <div class="rows" id="b-rows"></div>
     </div>
     <div class="cam">
-      <h2>Zone controller <span id="z-pwr" class="pill off">—</span></h2>
+      <h2>Zone controller <span class="sub" style="font-weight:400">relay LEDs · ■ paired thermostat</span> <span id="z-pwr" class="pill off">—</span></h2>
       <img id="z-img" alt="zone" src="stills/zone_latest.jpg">
       <div class="rows" id="z-rows"></div>
     </div>
@@ -177,7 +177,7 @@ let ECO = [], THERMS = [];
 const ECO_SITE = /beatrice/i;         // only thermostats at this address belong to the boiler system
 function parseEco(o){ return { ts: Date.parse(o.timestamp||o.local)||0,
   t:(o.thermostats||[]).filter(t=>ECO_SITE.test(((t.location||{}).streetAddress||"")+" "+((t.location||{}).name||"")))
-    .map(t=>({id:t.id, name:t.label||t.name, temp:t.temp, set:t.set_heat, heating:!!t.heating, fan:!!t.fan,
+    .map(t=>({id:t.id, name:t.label||t.name, zone:t.zone||null, temp:t.temp, set:t.set_heat, heating:!!t.heating, fan:!!t.fan,
       climate:t.climate, hold:t.hold, connected:t.connected!==false, last:t.last_status, humidity:t.humidity, sensors:t.sensors||[], eq:t.equipment||[], mode:t.hvac_mode})) }; }
 async function loadEco(){
   try{
@@ -186,9 +186,9 @@ async function loadEco(){
     const text=await r.text();
     ECO=text.trim().split("\n").filter(Boolean).map(l=>{try{return parseEco(JSON.parse(l));}catch(e){return null;}}).filter(Boolean);
     ECO.sort((a,b)=>a.ts-b.ts);
-    const seen=new Map(); ECO.forEach(e=>e.t.forEach(t=>{ if(t.id) seen.set(t.id,t.name||t.id); }));
-    THERMS=[...seen.entries()].map(([id,name],i)=>({id,name})).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
-    THERMS.forEach((t,i)=>t.color=EPAL[i%EPAL.length]);
+    const seen=new Map(); ECO.forEach(e=>e.t.forEach(t=>{ if(t.id) seen.set(t.id,{name:t.name||t.id, zone:t.zone}); }));
+    THERMS=[...seen.entries()].map(([id,v])=>({id,name:v.name,zone:v.zone})).sort((a,b)=>(a.zone||99)-(b.zone||99) || String(a.name).localeCompare(String(b.name)));
+    THERMS.forEach((t,i)=>t.color=EPAL[(t.zone?t.zone-1:i)%EPAL.length]);
   }catch(e){ ECO=[]; THERMS=[]; }
 }
 function windowedEco(){ if(!WINDOW_H) return ECO; const cut=Date.now()-WINDOW_H*3600e3; return ECO.filter(r=>r.ts>=cut); }
@@ -371,9 +371,20 @@ function renderTimeline(rows, erows=[]){
       k=j+1;
     }
   }
-  LANES.forEach((ln,li)=> drawLane(rows, ln.color, lanesTop + li*(LH+LG), ln.label, EXPECTED_MS, GAP_MS));
-  if(erows.length) THERMS.forEach((th,i)=> drawLane(erows, e=>{ const t=thermIn(e,th.id); return (!t || !t.connected) ? "unk" : t.heating ? COL.fire : "off"; },
-      lanesTop + (LANES.length+i)*(LH+LG), `${th.name} call`, ECO_MS, ECO_GAP_MS));
+  // Lane order: boiler lanes, Power, then for each zone its relay LED followed by its
+  // thermostat's heat call, then any thermostat without a zone, then Zone 4.
+  const ecoLane = th => ({ rs:erows, fn:e=>{ const t=thermIn(e,th.id); return (!t || !t.connected) ? "unk" : t.heating ? COL.fire : "off"; },
+                           label:`${th.zone?'Zone '+th.zone+' stat':th.name+' call'}`, exp:ECO_MS, gap:ECO_GAP_MS });
+  const laneList=[];
+  LANES.forEach(ln=>{
+    if(/^Zone \d$/.test(ln.label)){
+      const z=+ln.label.slice(-1);
+      laneList.push({rs:rows, fn:ln.color, label:`Zone ${z} LED`, exp:EXPECTED_MS, gap:GAP_MS});
+      if(erows.length) THERMS.filter(t=>t.zone===z).forEach(th=>laneList.push(ecoLane(th)));
+    } else laneList.push({rs:rows, fn:ln.color, label:ln.label, exp:EXPECTED_MS, gap:GAP_MS});
+  });
+  if(erows.length) THERMS.filter(t=>!t.zone || !LANES.some(l=>l.label===`Zone ${t.zone}`)).forEach(th=>laneList.push(ecoLane(th)));
+  laneList.forEach((ln,li)=> drawLane(ln.rs, ln.fn, lanesTop + li*(LH+LG), ln.label, ln.exp, ln.gap));
 
   s+=`<line id="cursor" x1="-5" y1="${PT}" x2="-5" y2="${lanesTop+lanesH}" stroke="${fg}" stroke-width="1" opacity="0"/>`;
   s+=`<rect id="cap" x="${ML}" y="${PT}" width="${plotW}" height="${lanesTop+lanesH-PT}" fill="transparent"/>`;
@@ -446,9 +457,13 @@ function renderLive(){
   $("z-pwr").textContent=lastZ.power===null?"—":lastZ.power?"power on":"power off";
   $("z-pwr").className="pill "+(lastZ.power?"ok":"bad");
   const px = lastZ.zpx ? k=>` <span class="sub">${(lastZ.zpx[k]||{}).white!=null?Math.round(lastZ.zpx[k].white*100)+'% white':''}</span>` : ()=>"";
-  $("z-rows").innerHTML = [["Power","power"],["Zone 1","zone1"],["Zone 2","zone2"],["Zone 3","zone3"],["Zone 4 / priority","zone4"]]
-    .map(([k,key])=>{ const v=lastZ[key==="power"?"power":"z"+key.slice(-1)];
-      return `<div class="row"><span class="k">${k}</span><span class="v">${pill(v,"ON","ok")}${px(key)}</span></div>`; }).join("")
+  const lastE = ECO.length ? ECO[ECO.length-1] : null;
+  const statCell = z => { const th=THERMS.find(t=>t.zone===z); const t=th&&lastE?thermIn(lastE,th.id):null; if(!t) return "";
+    const col=th.color; if(!t.connected) return ` <span class="sub"><span style="color:${col}">■</span> stat offline</span>`;
+    return ` <span class="sub"><span style="color:${col}">■</span> ${t.temp!=null?t.temp.toFixed(1):'—'}°/${t.set!=null?t.set.toFixed(0):'—'}°${t.heating?' <b style="color:#ff7a1a">calling</b>':''}</span>`; };
+  $("z-rows").innerHTML = [["Power","power",0],["Zone 1","zone1",1],["Zone 2","zone2",2],["Zone 3","zone3",3],["Zone 4 / priority","zone4",4]]
+    .map(([k,key,z])=>{ const v=lastZ[key==="power"?"power":"z"+key.slice(-1)];
+      return `<div class="row"><span class="k">${k}</span><span class="v">${z?statCell(z):""} ${pill(v,"ON","ok")}${px(key)}</span></div>`; }).join("")
     + `<div class="row"><span class="k">Read by</span><span class="v">${lastZ.zmethod||"—"}${lastZ.zwhy?' ('+lastZ.zwhy+')':''}</span></div>`;
 
   const probs=[]; if(last.codes&&last.codes.length) probs.push("error "+last.codes.join(", "));

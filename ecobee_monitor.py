@@ -34,10 +34,16 @@ OUT_DEFAULT = os.path.join(HERE, "stills")
 
 # The three thermostats at 180 Beatrice St are all named "Home" in ecobee, so give them
 # stable labels here (by identifier). Anything not listed is labelled "<name> (<model>)".
+# Confirmed by the owner 2026-10-16: unit number = Taco SR504 zone number.
+ECOBEE_ZONES = {
+    "511899414284": 1,   # Home 1: ecobee4 (apolloSmart)
+    "411937213889": 2,   # Home 2: ecobee3 lite (nikeSmart) - offline since 2026-10-09
+    "421862969595": 3,   # Home 3: Smart Thermostat (artemisSmart)
+}
 ECOBEE_LABELS = {
-    "511899414284": "Home · ecobee4",            # apolloSmart
-    "421862969595": "Home · Smart Thermostat",   # artemisSmart
-    "411937213889": "Home · ecobee3 lite",       # nikeSmart (offline since 2026-10-09)
+    "511899414284": "Zone 1 · ecobee4",
+    "411937213889": "Zone 2 · ecobee3 lite",
+    "421862969595": "Zone 3 · Smart Thermostat",
 }
 MODEL_SHORT = {"apolloSmart": "ecobee4", "artemisSmart": "Smart Thermostat", "nikeSmart": "ecobee3 lite",
                "athenaSmart": "ecobee3", "vulcanSmart": "Smart Thermostat w/ Voice", "aresSmart": "Smart Thermostat Enhanced"}
@@ -178,6 +184,7 @@ def summarize(t):
     return {
         "id": ident, "name": t.get("name"), "model": t.get("modelNumber"),
         "label": ECOBEE_LABELS.get(ident) or f"{t.get('name')} ({MODEL_SHORT.get(t.get('modelNumber'), t.get('modelNumber'))})",
+        "zone": ECOBEE_ZONES.get(ident),
         "location": {k: loc.get(k) for k in ("name", "streetAddress", "city")},
         "connected": rt.get("connected"), "last_status": rt.get("lastStatusModified"),
         "hvac_mode": st.get("hvacMode"),
@@ -230,7 +237,7 @@ def poll(out):
         sys.exit("get_thermostats failed")
     rec = {"timestamp": datetime.now(timezone.utc).isoformat(),
            "local": datetime.now().isoformat(timespec="seconds"),
-           "thermostats": sorted((summarize(t) for t in eco.thermostats), key=lambda x: (x["name"] or ""))}
+           "thermostats": sorted((summarize(t) for t in eco.thermostats), key=lambda x: (x["zone"] or 99, x["name"] or ""))}
     os.makedirs(out, exist_ok=True)
     with open(os.path.join(out, "ecobee.jsonl"), "a") as f: f.write(json.dumps(rec) + "\n")
     with open(os.path.join(out, "ecobee_latest.json"), "w") as f: json.dump(rec, f, indent=2)
