@@ -1,31 +1,35 @@
 {
-  "timestamp": "2026-10-16T02:24:10.191481+00:00",
-  "local": "2026-10-16T02:24:10",
+  "timestamp": "2026-10-16T02:46:01.890520+00:00",
+  "local": "2026-10-16T02:46:01",
   "boiler": {
-    "image": "boiler_20261016_022427.jpg",
+    "image": "boiler_20261016_024616.jpg",
     "reading": {
-      "temperature": "128\u00b0F",
-      "mode": "dhw",
+      "temperature": "127\u00b0F",
       "flame_on": false,
-      "heat_demand_icon": false,
-      "dhw_storage_icon": true,
+      "fan_on": false,
+      "ch_icon": false,
+      "dhw_icon": false,
+      "pump_on": false,
+      "dhw_pump": false,
       "error_codes": [],
-      "display_text": "AM 7:49 SUN",
-      "legible": true
+      "display_text": "12 11 SUN (small digits upper-left, partly ghosted '18' above); house icon top; ((o)) communication icon top right",
+      "legible": true,
+      "mode": "idle"
     }
   },
   "zone": {
-    "image": "zone_20261016_022450.jpg",
+    "image": "zone_20261016_024636.jpg",
     "reading": {
       "power": true,
       "zone1": false,
       "zone2": false,
       "zone3": false,
-      "notes": "POWER is the only LED with a bright, blown-out near-white core. ZONE 1 shows a distinct saturated green dot with a slightly lighter centre, but no white-hot core, so it counts as OFF under the stated rule. This call is borderline: it is noticeably brighter than ZONE 2/3, so it may be a dimly lit LED rather than pure bleed. ZONE 2 and ZONE 3 are dark grey with no glow."
+      "notes": "POWER has a bright, blown-out near-white core, so it is ON. ZONE 1 shows a distinct saturated green dot but no white-hot core, so it is OFF under the bright-core rule. This call is borderline because the glow is localized, so it could be a dimmer active LED rather than bleed. ZONE 2 and ZONE 3 are dark grey with no glow, so they are OFF."
     }
   },
   "alert": {
     "problems": [],
-    "changed": false
+    "sent": false,
+    "throttled": false
   }
 }
