@@ -55,9 +55,11 @@ EXACT icon legend; the stated positions are where each icon sits on the display:
   like a small crown/comb), on the RIGHT side, below the F/C letters. This CROWN is the
   ONLY true "is the burner firing" indicator - do not infer flame from anything else.
 - FAN ON: a small FAN icon on the RIGHT, just below the flame crown.
-- Pumps (three TRIANGLE-IN-CIRCLE icons stacked on the lower RIGHT, top to bottom =
-  Boiler pump, CH/System pump, DHW pump). Report whether any pump triangle is lit, and
-  the DHW (bottom) one specifically if you can tell them apart.
+- Pumps (three TRIANGLE-IN-CIRCLE icons on the lower RIGHT, below the F/C letters).
+  Layout per Fig.51: TWO sit SIDE BY SIDE in the upper row = Boiler pump (left) and
+  CH/System pump (right); a THIRD sits alone BELOW them = DHW pump. So two lit triangles
+  in a row means boiler + CH pumps (NOT DHW); dhw_pump is true only if the lower, single
+  triangle under that row is lit.
 - Outdoor-temperature mode: a HOUSE-WITH-THERMOMETER icon, upper-left. It FLASHES when no
   outdoor sensor is connected, so it usually means only "no sensor", not any demand - IGNORE
   it for mode. A SUN icon (far upper-left) = warm-weather shutdown. SNOWFLAKE = anti-freeze.
