@@ -20,7 +20,7 @@ Env (local: .env file; CI: GitHub Secrets):
 
 Usage:
   python3 monitor.py --once           # one cycle now (what CI runs)
-  python3 monitor.py --interval 3600  # loop hourly in the foreground
+  python3 monitor.py --interval 1800  # loop every 30 min in the foreground
   python3 monitor.py --model claude-haiku-5-5   # cheaper model
 """
 import argparse, base64, json, os, sys, time, traceback

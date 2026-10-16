@@ -1,9 +1,9 @@
 # Tapo Boiler Monitor
 
-Hourly, hands-off monitoring of a boiler + zone-controller via two Tapo C100 cameras —
+Hands-off monitoring every 30 minutes of a boiler + zone-controller via two Tapo C100 cameras —
 running entirely in **GitHub Actions** (no laptop, no site hardware, no local network).
 
-Each hour it:
+Every 30 minutes it:
 1. Captures a fresh 1080p still from each camera (pure cloud: TP-Link login → MQTT relay
    → MPEG-TS → ffmpeg; reconstructed from the Tapo app, no emulator).
 2. Reads the boiler LCD with Claude vision (structured JSON: temperature, every icon from
@@ -52,10 +52,10 @@ python3 grab_boiler_cloud.py --camera zone   # just grab a still
 
 ## Schedule / cost
 
-- Cron runs hourly (`.github/workflows/monitor.yml`). GitHub Actions compute is free at
+- Cron runs every 30 minutes at :07 and :37 (`.github/workflows/monitor.yml`). GitHub Actions compute is free at
   this volume (public repo).
-- The only real cost is the Claude API: one boiler read per hour (~$0.018 on Opus 5.5,
-  ~$13/month; ~$0.009 on Sonnet 5.5, which scored 10/10 on the 2026-10-16 benchmark, see
+- The only real cost is the Claude API: one boiler read per cycle, 48/day (~$0.018 on Opus 5.5,
+  ~$26/month; ~$0.009 on Sonnet 5.5, ~$13/month, which scored 10/10 on the 2026-10-16 benchmark, see
   `legend.html`). Zone LEDs are read from pixels at no cost. The workflow runs Sonnet 5.5
   as the primary; a frame gets a second read on `--confirm-model` (default Opus, medium
   effort) when it shows an error code, is unreadable, or is low-confidence AND would change

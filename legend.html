@@ -89,7 +89,7 @@
 
     <h3>How the boiler reading is produced</h3>
     <ul>
-      <li>A fresh 1920×1080 still is pulled from the camera through TP-Link's cloud relay (8 frames decoded, sharpest kept).</li>
+      <li>Every 30 minutes a fresh 1920×1080 still is pulled from the camera through TP-Link's cloud relay (8 frames decoded, sharpest kept).</li>
       <li>Three images go to Claude: the annotated Figure 51 legend, a small full-frame for context, and a 3× zoom of the LCD panel.</li>
       <li>The model must answer in a fixed JSON schema (one boolean per icon, plus temperature, clock, error codes, and a confidence level), so a reading can never be malformed.</li>
       <li>A segment counts as lit only when it is solidly dark. Every segment on an LCD has a faint ghost outline, and ghosts are off.</li>
@@ -135,8 +135,8 @@
   <div class="card">
     <h2>Timeline conventions</h2>
     <ul>
-      <li>Each reading owns the hour after it, so a bar runs from one capture to the next. Consecutive identical values merge into one bar.</li>
-      <li>A hatched band means the monitor produced no reading for that period (a missed GitHub Actions run). It is not a boiler state.</li>
+      <li>Each reading owns the 30 minutes after it, so a bar runs from one capture to the next. Consecutive identical values merge into one bar.</li>
+      <li>A hatched band means the monitor produced no reading for that period (a missed GitHub Actions run; they are scheduled every 30 minutes). It is not a boiler state.</li>
       <li>A dashed grey lane segment means that field was not captured by the version of the monitor running at the time.</li>
       <li>White dots on the temperature line mark captures where the burner was firing.</li>
     </ul>

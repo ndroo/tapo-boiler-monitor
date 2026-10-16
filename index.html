@@ -124,7 +124,7 @@
       <span><i class="sw" style="background:#34c759"></i>on</span>
       <span><i class="sw" style="background:#ff3b30"></i>error / screen out</span>
       <span><i class="sw" style="background:var(--off)"></i>off</span>
-      <span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--nodata) 0 3px,var(--line) 3px 5px)"></i>no reading (monitor missed the hour)</span>
+      <span><i class="sw" style="background:repeating-linear-gradient(45deg,var(--nodata) 0 3px,var(--line) 3px 5px)"></i>no reading (monitor missed a 30-min slot)</span>
       <span><i class="sw" style="background:var(--unk);border:1px dashed var(--muted)"></i>not captured by that version</span>
     </div>
   </div>
@@ -146,14 +146,14 @@
     </tr></thead><tbody id="tbody"></tbody></table></div>
   </div>
 
-  <div class="sub" style="text-align:center">Captured hourly by GitHub Actions · auto-refreshes every 5 min · <a href="legend.html">screen legend</a></div>
+  <div class="sub" style="text-align:center">Captured every 30 minutes by GitHub Actions · auto-refreshes every 5 min · <a href="legend.html">screen legend</a></div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
 const COL = { on:"#34c759", fire:"#ff7a1a", dhw:"#0a84ff", err:"#ff3b30" };
-const EXPECTED_MS = 3600e3;          // one reading per hour
-const GAP_MS = 1.6*EXPECTED_MS;      // longer than this between readings = a missed hour
+const EXPECTED_MS = 1800e3;          // one reading every 30 minutes
+const GAP_MS = 1.6*EXPECTED_MS;      // longer than this between readings = a missed slot
 let ALL = [], WINDOW_H = 168;
 
 function tempNum(s){ if(s==null) return null; const m=String(s).match(/-?\d+(\.\d+)?/); return m?parseFloat(m[0]):null; }
@@ -378,7 +378,7 @@ function renderLive(){
   if(last.legible===false) probs.push("boiler screen unreadable");
   const b=$("banner"); const ageH = ALL.length ? (Date.now()-ALL[ALL.length-1].ts)/3600e3 : 99;
   if(probs.length){ b.className="banner bad"; b.textContent="⚠️ "+probs.join(" · "); }
-  else if(ageH>2.5){ b.className="banner warn"; b.textContent=`⚠️ No new reading for ${ageH.toFixed(1)} h — the hourly job may not be running`; }
+  else if(ageH>1.25){ b.className="banner warn"; b.textContent=`⚠️ No new reading for ${ageH.toFixed(1)} h — the 30-minute job may not be running`; }
   else { b.className="banner ok"; b.textContent="✅ All normal"; }
 }
 
@@ -386,14 +386,14 @@ function renderStats(rows){
   if(!rows.length){ $("stats").innerHTML=""; return; }
   const last=rows[rows.length-1];
   const spanH=Math.max(1,(last.ts-rows[0].ts)/3600e3);
-  const expected=Math.round(spanH)+1, got=rows.length, cov=Math.min(100,Math.round(100*got/expected));
+  const expected=Math.round(spanH*3600e3/EXPECTED_MS)+1, got=rows.length, cov=Math.min(100,Math.round(100*got/expected));
   const tok=rows.reduce((a,r)=>a+(r.tokens||0),0);
   const fire=rows.filter(r=>r.flame).length, heat=rows.filter(r=>r.ch).length, dhw=rows.filter(r=>r.dhw).length;
   const temps=rows.map(r=>r.temp).filter(v=>v!=null);
   const S=(k,v,s)=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s||""}</div></div>`;
   $("stats").innerHTML =
     S("Last reading", fmt(last.ts,true), ((Date.now()-last.ts)/3600e3).toFixed(1)+" h ago") +
-    S("Coverage", cov+"%", `${got} of ~${expected} hourly readings`) +
+    S("Coverage", cov+"%", `${got} of ~${expected} half-hourly readings`) +
     S("Temp range", temps.length?`${Math.min(...temps)}–${Math.max(...temps)}°F`:"—", "in window") +
     S("Burner firing", `${fire}/${got}`, `heat call ${heat} · DHW call ${dhw}`) +
     S("API tokens", tok.toLocaleString(), "in window · latest read by "+shortModel(last.model));

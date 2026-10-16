@@ -1,10 +1,10 @@
 name: tapo-monitor
 
-# Runs hourly in GitHub's cloud - independent of any laptop. Also runnable on demand
+# Runs every 30 minutes in GitHub's cloud - independent of any laptop. Also runnable on demand
 # from the Actions tab (workflow_dispatch).
 on:
   schedule:
-    - cron: "7 * * * *"      # every hour at :07 (top-of-hour is the most congested/delayed)
+    - cron: "7,37 * * * *"   # every 30 min at :07 and :37 (top-of-hour is the most congested/delayed)
   workflow_dispatch: {}
 
 # Let the job commit the latest stills + readings back to the repo.
@@ -48,10 +48,10 @@ jobs:
         # Low-confidence / error / unreadable frames are re-read on Opus (--confirm-model default).
         run: python monitor.py --once --model claude-sonnet-5-5
 
-      - name: Trim logs to the last 2000 lines
+      - name: Trim logs to the last 4000 lines (~83 days at 48/day)
         run: |
           for f in stills/readings.jsonl stills/alerts.jsonl; do
-            if [ -f "$f" ]; then tail -n 2000 "$f" > "$f.tmp" && mv "$f.tmp" "$f"; fi
+            if [ -f "$f" ]; then tail -n 4000 "$f" > "$f.tmp" && mv "$f.tmp" "$f"; fi
           done
 
       - name: Commit results
