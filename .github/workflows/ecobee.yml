@@ -1,0 +1,48 @@
+name: ecobee-monitor
+
+# Polls every ecobee thermostat on the account every 15 minutes (free: no model calls) and
+# commits stills/ecobee.jsonl + ecobee_latest.json. Also runnable on demand.
+on:
+  schedule:
+    - cron: "3,18,33,48 * * * *"   # :03 :18 :33 :48 - off the top of the hour, and not on the camera job's :07/:37
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ecobee-monitor
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install "python-ecobee-api>=0.4.4" cryptography requests
+      - name: Poll thermostats
+        env:
+          ECOBEE_TOKEN_KEY: ${{ secrets.ECOBEE_TOKEN_KEY }}
+        run: python ecobee_monitor.py --once
+      - name: Trim log to the last 10000 lines (~100 days at 96/day)
+        run: |
+          f=stills/ecobee.jsonl
+          if [ -f "$f" ]; then tail -n 10000 "$f" > "$f.tmp" && mv "$f.tmp" "$f"; fi
+      - name: Commit results
+        run: |
+          git config user.name  "ecobee-monitor-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in stills/ecobee.jsonl stills/ecobee_latest.json ecobee_token.enc; do
+            if [ -f "$f" ]; then git add -f "$f"; fi
+          done
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "ecobee $(date -u +%Y-%m-%dT%H:%MZ)"
+            git pull --rebase origin main
+            git push
+          fi

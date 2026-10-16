@@ -119,6 +119,17 @@
   </div>
 
   <div class="card">
+    <h2>Thermostats: ecobee (three zones)</h2>
+    <p>Every 15 minutes the monitor signs in to the ecobee account the way the ecobee web app does (no developer API key is needed) and reads each thermostat: indoor temperature, the heat set-point, whether it is <b>calling for heat</b> (any heating equipment listed in the thermostat's equipment status), the fan, the active comfort setting or hold, humidity, and each remote sensor.</p>
+    <ul>
+      <li><b>Tiles</b> show the latest reading per thermostat. An orange edge and "calling for heat" mean that zone's thermostat has closed its heat call; the number after the set-point is how far the room is above (+) or below (−) it.</li>
+      <li><b>Rooms panel</b> on the timeline: one solid line per thermostat for indoor temperature, dashed for its set-point, in the thermostat's colour.</li>
+      <li><b>"&lt;name&gt; call" lanes</b> sit under the Taco zone LEDs so the chain can be read top to bottom: thermostat calls → zone relay LED lights → boiler shows a heat call → burner fires → room temperature rises.</li>
+      <li>The refresh token is stored encrypted in the repo (<code>ecobee_token.enc</code>); the key lives only in a GitHub secret. The password is never stored.</li>
+    </ul>
+  </div>
+
+  <div class="card">
     <h2>Model comparison (2026-10-16)</h2>
     <p>Every local still (15 boiler frames: 8 heating calls, 2 idle, 5 where the camera was framed on pipes; 10 zone frames) was re-read by three models with the production prompt and legend image. Ground truth was set by eye from the enlarged crops.</p>
     <div class="wrapx"><table>

@@ -15,6 +15,24 @@ Every 30 minutes it:
 4. Commits the latest images + `readings.jsonl` back to the repo, and a small dashboard
    (`index.html`) shows the live state.
 
+## ecobee thermostats (every 15 minutes, free)
+
+`ecobee_monitor.py` logs every thermostat on the account (temperature vs. heat set-point,
+calling-for-heat, equipment, comfort setting / hold, humidity, remote sensors) to
+`stills/ecobee.jsonl`; `.github/workflows/ecobee.yml` runs it at :03/:18/:33/:48. It signs
+in like the ecobee web app (Auth0 + PKCE via `python-ecobee-api`), so no developer API key
+is needed. One-time setup, in a terminal:
+
+```bash
+pip install -r requirements.txt
+python3 ecobee_monitor.py login --publish   # email, password (not stored), MFA code;
+                                            # writes ecobee_token.enc (encrypted), sets the
+                                            # ECOBEE_TOKEN_KEY GitHub secret, commits + pushes
+```
+
+If ecobee rotates the refresh token, the job re-encrypts and commits `ecobee_token.enc`.
+A password change on the account revokes the token; re-run the login command.
+
 ## Secrets (set in repo → Settings → Secrets and variables → Actions)
 
 **No credential is ever stored in this repo.** They live only as encrypted GitHub Secrets:
@@ -31,6 +49,7 @@ Every 30 minutes it:
 | `TWILIO_API_KEY_SECRET` | the API Key's secret |
 | `TWILIO_FROM` | your Twilio phone number, e.g. `+1512...` |
 | `ALERT_TO` | the phone number to text, e.g. `+1647...` |
+| `ECOBEE_TOKEN_KEY` | Fernet key that decrypts `ecobee_token.enc` (created by `ecobee_monitor.py login`) |
 
 Authenticate with **either** `TWILIO_AUTH_TOKEN` (classic) **or** the
 `TWILIO_API_KEY_SID` + `TWILIO_API_KEY_SECRET` pair. `TWILIO_ACCOUNT_SID` is required
