@@ -25,7 +25,7 @@
   .banner.bad { display:block; background:rgba(255,59,48,.12); color:var(--bad); border:1px solid rgba(255,59,48,.3); }
 
   /* live cards */
-  .cards { display:grid; gap:14px; grid-template-columns:1fr; }
+  .cards { display:grid; gap:14px; grid-template-columns:1fr; margin-bottom:16px; }
   @media (min-width:680px){ .cards { grid-template-columns:1fr 1fr; } }
   .cam { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
   .cam h2 { padding:12px 14px; margin:0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
@@ -46,7 +46,7 @@
   .ctls .range { color:var(--muted); font-size:13px; margin-left:auto; }
 
   /* timeline */
-  #tl { position:relative; width:100%; overflow:hidden; }
+  #tl { position:relative; width:100%; overflow:hidden; margin-top:12px; }
   #tl svg { display:block; width:100%; }
   .tip { position:absolute; pointer-events:none; background:var(--card); border:1px solid var(--line);
     border-radius:8px; padding:7px 9px; font-size:12px; line-height:1.45; box-shadow:0 4px 14px rgba(0,0,0,.25);
@@ -161,7 +161,7 @@ let SAMP = [];  // {ts,x} for hover
 
 function renderTimeline(rows){
   const host=$("tl"); const W=host.clientWidth||680;
-  const ML=52, MR=14, PT=10, TH=120, GAP=14, LH=20, LG=4, AX=26;
+  const ML=52, MR=14, PT=18, TH=120, GAP=14, LH=20, LG=4, AX=26;
   const plotW=Math.max(40, W-ML-MR);
   const lanesTop = PT+TH+GAP;
   const H = lanesTop + LANES.length*(LH+LG) + AX;
@@ -171,7 +171,7 @@ function renderTimeline(rows){
   if(!rows.length){ host.innerHTML='<div class="empty">No data in this window yet.</div><div class="tip" id="tip"></div>'; return; }
 
   let tmin=rows[0].ts, tmax=rows[rows.length-1].ts;
-  if(tmax-tmin < 3600e3) tmax = tmin + 3600e3;
+  if(tmax<=tmin) tmax = tmin + 3600e3;   // single-point guard only; otherwise fit exactly to data
   const span=Math.max(1,tmax-tmin);
   const x = ts => ML + ((ts-tmin)/span)*plotW;
 
@@ -211,16 +211,26 @@ function renderTimeline(rows){
   if(pts.length<=80) pts.forEach(r=> s+=`<circle cx="${x(r.ts)}" cy="${yT(r.temp)}" r="2.5" fill="${COL.fire}"/>`);
   s+=`<text x="${ML}" y="${PT-2}" fill="${muted}" font-size="10">Boiler temp (°F)</text>`;
 
-  // --- status lanes (aligned to same x) ---
-  LANES.forEach((ln,i)=>{ const y=lanesTop + i*(LH+LG);
+  // --- status lanes: merge consecutive equal values into a single bar, so rounded
+  //     corners only appear at real transitions; break across large time gaps; every
+  //     lane ends at the right edge (the last reading), aligned with the temp line ---
+  LANES.forEach((ln,li)=>{ const y=lanesTop + li*(LH+LG);
     s+=`<text x="${ML-6}" y="${y+LH/2+3}" fill="${muted}" font-size="10" text-anchor="end">${ln.label}</text>`;
-    for(let k=0;k<rows.length;k++){
+    const col=rows.map(ln.color);
+    let k=0;
+    while(k<rows.length){
+      let j=k;  // extend the run while the value is unchanged and there's no big gap
+      while(j+1<rows.length && col[j+1]===col[k] && (rows[j+1].ts-rows[j].ts)<=2.5*med) j++;
       const x0=x(rows[k].ts);
-      let x1 = k<rows.length-1 ? x(rows[k+1].ts) : Math.min(ML+plotW, x0 + (plotW*med/span));
-      // break the band if there's a big gap to the next sample
-      if(k<rows.length-1 && (rows[k+1].ts-rows[k].ts) > 2.5*med) x1 = Math.min(x1, x0 + (plotW*med/span));
-      const w=Math.max(1.5, x1-x0);
-      s+=`<rect x="${x0}" y="${y}" width="${w}" height="${LH}" fill="${ln.color(rows[k])}" rx="2"/>`;
+      let x1;
+      if(j+1<rows.length){
+        const gap=rows[j+1].ts-rows[j].ts;
+        x1 = gap>2.5*med ? x(Math.min(tmax, rows[j].ts + 2*med)) : x(rows[j+1].ts);
+      } else {
+        x1 = x(tmax);  // last run reaches the right edge
+      }
+      if(x1-x0 >= 0.5) s+=`<rect x="${x0}" y="${y}" width="${x1-x0}" height="${LH}" fill="${col[k]}" rx="3"/>`;
+      k=j+1;
     }
   });
 
