@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-10-16T22:40:04.312672+00:00",
-  "local": "2026-10-16T22:40:04",
+  "timestamp": "2026-10-16T23:10:24.120816+00:00",
+  "local": "2026-10-16T23:10:24",
   "boiler": {
-    "image": "boiler_20261016_224019.jpg",
+    "image": "boiler_20261016_231039.jpg",
     "reading": {
-      "temperature": "108\u00b0F",
-      "time_text": "8:05 AM",
+      "temperature": "111\u00b0F",
+      "time_text": "8:35 AM",
       "day_text": "MON",
-      "flame_on": true,
-      "fan_on": true,
+      "flame_on": false,
+      "fan_on": false,
       "ch_icon": true,
       "dhw_icon": false,
       "boiler_pump": true,
@@ -22,54 +22,42 @@
       "comm_icon": true,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "AM 8:05 MON 108 \u00b0F",
+      "display_text": "AM 8:35 MON 111 F",
       "legible": true,
       "confidence": "medium",
-      "notes": "The image is blurry, so the flame crown, fan, comm and house icons, as well as the AM indicator, are hard to tell apart from ghost segments.",
-      "first_pass": {
-        "model": "claude-sonnet-5-5",
-        "why_confirmed": "low confidence + state change (flame_on, temperature)",
-        "temperature": "108\u00b0F",
-        "confidence": "low",
-        "error_codes": [],
-        "legible": true,
-        "dhw_icon": false,
-        "ch_icon": true,
-        "flame_on": true
-      },
+      "notes": "Image is blurry; the house icon appears dark, but it may be flashing. The comm icon looks partly dark, and the two pump icons look lit while the flame and fan look off.",
       "pump_on": true,
       "mode": "heating"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
-      "input": 6522,
-      "output": 920,
-      "cache_read": 0,
-      "confirm_model": "claude-opus-5-5"
+      "input": 3261,
+      "output": 263,
+      "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261016_224046.jpg",
+    "image": "zone_20261016_231058.jpg",
     "pixels": {
       "power": {
-        "white": 0.919,
+        "white": 0.914,
         "mean": 243
       },
       "zone1": {
         "white": 0.0,
-        "mean": 87
+        "mean": 88
       },
       "zone2": {
-        "white": 0.137,
-        "mean": 139
+        "white": 0.168,
+        "mean": 141
       },
       "zone3": {
-        "white": 0.812,
-        "mean": 231
+        "white": 0.822,
+        "mean": 233
       },
       "zone4": {
         "white": 0.0,
-        "mean": 96
+        "mean": 99
       }
     },
     "reading": {
@@ -79,7 +67,7 @@
       "zone3": true,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.92, zone1 0.00, zone2 0.14, zone3 0.81, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.91, zone1 0.00, zone2 0.17, zone3 0.82, zone4 0.00"
     }
   },
   "alert": {
