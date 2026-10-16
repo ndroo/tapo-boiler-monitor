@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-10-16T14:20:06.405837+00:00",
-  "local": "2026-10-16T14:20:06",
+  "timestamp": "2026-10-16T14:23:49.071456+00:00",
+  "local": "2026-10-16T14:23:49",
   "boiler": {
-    "image": "boiler_20261016_142022.jpg",
+    "image": "boiler_20261016_142405.jpg",
     "reading": {
       "temperature": "73\u00b0F",
-      "time_text": "7:45",
-      "day_text": null,
+      "time_text": "12:49",
+      "day_text": "SUN",
       "flame_on": false,
       "fan_on": false,
       "ch_icon": true,
@@ -19,41 +19,41 @@
       "snowflake_icon": false,
       "info_icon": false,
       "wrench_icon": false,
-      "comm_icon": true,
+      "comm_icon": false,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "7:45 73\u00b0F",
+      "display_text": "SUN 12:49 73 F",
       "legible": true,
       "confidence": "medium",
-      "notes": "AM/PM and day segments are faint and unclear; the house and comm icons are dark but may be ghosted, and the two pump icons look moderately dark.",
+      "notes": "Clock digits are blurry and could be misread (the frame timestamp reads 09:23, so the clock may be 12-hour with different digits); the house icon appears lit but may be flashing.",
       "pump_on": true,
       "mode": "heating"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3261,
-      "output": 246,
+      "output": 263,
       "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261016_142041.jpg",
+    "image": "zone_20261016_142424.jpg",
     "pixels": {
       "power": {
         "white": 0.97,
-        "mean": 249
+        "mean": 248
       },
       "zone1": {
         "white": 0.863,
-        "mean": 240
+        "mean": 239
       },
       "zone2": {
         "white": 0.0,
-        "mean": 93
+        "mean": 94
       },
       "zone3": {
         "white": 0.0,
-        "mean": 53
+        "mean": 55
       },
       "zone4": {
         "white": 0.0,
