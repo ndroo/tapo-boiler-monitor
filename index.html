@@ -174,9 +174,11 @@ const ECO_MS = 900e3;                 // ecobee is polled every 15 minutes
 const ECO_GAP_MS = 1.6*ECO_MS;
 const EPAL = ["#e0589b","#5ac8fa","#ffd60a","#af52de","#30d158"];   // one line colour per thermostat
 let ECO = [], THERMS = [];
+const ECO_SITE = /beatrice/i;         // only thermostats at this address belong to the boiler system
 function parseEco(o){ return { ts: Date.parse(o.timestamp||o.local)||0,
-  t:(o.thermostats||[]).map(t=>({id:t.id, name:t.name, temp:t.temp, set:t.set_heat, heating:!!t.heating, fan:!!t.fan,
-      climate:t.climate, hold:t.hold, connected:t.connected!==false, humidity:t.humidity, sensors:t.sensors||[], eq:t.equipment||[], mode:t.hvac_mode})) }; }
+  t:(o.thermostats||[]).filter(t=>ECO_SITE.test(((t.location||{}).streetAddress||"")+" "+((t.location||{}).name||"")))
+    .map(t=>({id:t.id, name:t.label||t.name, temp:t.temp, set:t.set_heat, heating:!!t.heating, fan:!!t.fan,
+      climate:t.climate, hold:t.hold, connected:t.connected!==false, last:t.last_status, humidity:t.humidity, sensors:t.sensors||[], eq:t.equipment||[], mode:t.hvac_mode})) }; }
 async function loadEco(){
   try{
     const r=await fetch("stills/ecobee.jsonl?t="+Date.now(), {cache:"no-store"});
@@ -344,7 +346,7 @@ function renderTimeline(rows, erows=[]){
       s+=`<text x="${ML-6}" y="${yy+3}" fill="${muted}" font-size="10" text-anchor="end">${v.toFixed(0)}°</text>`; });
     THERMS.forEach(th=>{
       let dT="", dS="", pv=null;
-      erows.forEach(e=>{ const t=thermIn(e,th.id); if(!t) return; const X=x(e.ts); const brk = pv && (e.ts-pv)>ECO_GAP_MS; pv=e.ts;
+      erows.forEach(e=>{ const t=thermIn(e,th.id); if(!t || !t.connected) return; const X=x(e.ts); const brk = pv && (e.ts-pv)>ECO_GAP_MS; pv=e.ts;
         if(t.temp!=null) dT += (brk||!dT?` M${X},${yE(t.temp)}`:` L${X},${yE(t.temp)}`);
         if(t.set!=null)  dS += (brk||!dS?` M${X},${yE(t.set)}`:` L${X},${yE(t.set)}`); });
       s+=`<path d="${dS}" fill="none" stroke="${th.color}" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.8"/>`;
@@ -370,7 +372,7 @@ function renderTimeline(rows, erows=[]){
     }
   }
   LANES.forEach((ln,li)=> drawLane(rows, ln.color, lanesTop + li*(LH+LG), ln.label, EXPECTED_MS, GAP_MS));
-  if(erows.length) THERMS.forEach((th,i)=> drawLane(erows, e=>{ const t=thermIn(e,th.id); return !t ? "unk" : t.heating ? COL.fire : "off"; },
+  if(erows.length) THERMS.forEach((th,i)=> drawLane(erows, e=>{ const t=thermIn(e,th.id); return (!t || !t.connected) ? "unk" : t.heating ? COL.fire : "off"; },
       lanesTop + (LANES.length+i)*(LH+LG), `${th.name} call`, ECO_MS, ECO_GAP_MS));
 
   s+=`<line id="cursor" x1="-5" y1="${PT}" x2="-5" y2="${lanesTop+lanesH}" stroke="${fg}" stroke-width="1" opacity="0"/>`;
@@ -463,12 +465,12 @@ function renderEcoCards(){
   const age=(Date.now()-last.ts)/60e3;
   $("eco-sub").textContent = `ecobee · ${fmt(last.ts,true)}${age>40?' · stale ('+Math.round(age)+' min)':''}`;
   $("eco-tiles").innerHTML = THERMS.map(th=>{ const t=thermIn(last,th.id); if(!t) return "";
-    const call = t.heating ? '<span class="pill warn">calling for heat</span>' : t.fan ? '<span class="pill off">fan</span>' : '<span class="pill off">idle</span>';
+    const call = !t.connected ? '<span class="pill bad">offline</span>' : t.heating ? '<span class="pill warn">calling for heat</span>' : t.fan ? '<span class="pill off">fan</span>' : '<span class="pill off">idle</span>';
     const sens = t.sensors.filter(s=>s.type!=="thermostat" && s.temp!=null).map(s=>`${s.name} ${Number(s.temp).toFixed(1)}°${s.occupied?' ·':''}`).join(", ");
-    return `<div class="tile ${t.heating?'heat':''}" style="border-top:3px solid ${th.color}">
+    return `<div class="tile ${t.heating&&t.connected?'heat':''}" style="border-top:3px solid ${th.color}${t.connected?'':';opacity:.6'}">
       <div class="nm"><span>${t.name}</span>${call}</div>
       <div class="big">${t.temp!=null?t.temp.toFixed(1):'—'}°<small>set ${t.set!=null?t.set.toFixed(0):'—'}°${t.temp!=null&&t.set!=null?' · '+(t.temp-t.set>=0?'+':'')+(t.temp-t.set).toFixed(1)+'°':''}</small></div>
-      <div class="sub">${t.climate||'—'}${t.hold?' · hold'+(t.hold.heat!=null?' '+t.hold.heat+'°':'')+(t.hold.until?' until '+t.hold.until.slice(11,16):''):''} · ${t.mode||''}${t.humidity!=null?' · '+t.humidity+'% RH':''}${t.eq.length?' · '+t.eq.join(', '):''}${!t.connected?' · <span class="pill bad">offline</span>':''}</div>
+      <div class="sub">${t.climate||'—'}${t.hold?' · hold'+(t.hold.heat!=null?' '+t.hold.heat+'°':'')+(t.hold.until?' until '+t.hold.until.slice(11,16):''):''} · ${t.mode||''}${t.humidity!=null?' · '+t.humidity+'% RH':''}${t.eq.length?' · '+t.eq.join(', '):''}${!t.connected?' · last seen '+(t.last||'?'):''}</div>
       ${sens?`<div class="sub">${sens}</div>`:''}
     </div>`; }).join("");
 }

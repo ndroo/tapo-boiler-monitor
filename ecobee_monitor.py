@@ -32,6 +32,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 TOKEN_FILE = os.path.join(HERE, "ecobee_token.enc")
 OUT_DEFAULT = os.path.join(HERE, "stills")
 
+# The three thermostats at 180 Beatrice St are all named "Home" in ecobee, so give them
+# stable labels here (by identifier). Anything not listed is labelled "<name> (<model>)".
+ECOBEE_LABELS = {
+    "511899414284": "Home · ecobee4",            # apolloSmart
+    "421862969595": "Home · Smart Thermostat",   # artemisSmart
+    "411937213889": "Home · ecobee3 lite",       # nikeSmart (offline since 2026-10-09)
+}
+MODEL_SHORT = {"apolloSmart": "ecobee4", "artemisSmart": "Smart Thermostat", "nikeSmart": "ecobee3 lite",
+               "athenaSmart": "ecobee3", "vulcanSmart": "Smart Thermostat w/ Voice", "aresSmart": "Smart Thermostat Enhanced"}
+
 # equipmentStatus entries that mean "heat is being produced for this zone"
 HEAT_EQUIPMENT = {"heatPump", "heatPump2", "heatPump3", "auxHeat1", "auxHeat2", "auxHeat3",
                   "compHeat", "auxHotWater"}
@@ -164,8 +174,10 @@ def summarize(t):
                         "temp": tenths(cap.get("temperature")) if cap.get("temperature") not in (None, "unknown") else None,
                         "occupied": (cap.get("occupancy") == "true") if "occupancy" in cap else None,
                         "humidity": int(cap["humidity"]) if cap.get("humidity", "unknown") not in ("unknown", None) else None})
+    ident = t.get("identifier")
     return {
-        "id": t.get("identifier"), "name": t.get("name"), "model": t.get("modelNumber"),
+        "id": ident, "name": t.get("name"), "model": t.get("modelNumber"),
+        "label": ECOBEE_LABELS.get(ident) or f"{t.get('name')} ({MODEL_SHORT.get(t.get('modelNumber'), t.get('modelNumber'))})",
         "location": {k: loc.get(k) for k in ("name", "streetAddress", "city")},
         "connected": rt.get("connected"), "last_status": rt.get("lastStatusModified"),
         "hvac_mode": st.get("hvacMode"),
@@ -223,7 +235,7 @@ def poll(out):
     with open(os.path.join(out, "ecobee.jsonl"), "a") as f: f.write(json.dumps(rec) + "\n")
     with open(os.path.join(out, "ecobee_latest.json"), "w") as f: json.dump(rec, f, indent=2)
     for t in rec["thermostats"]:
-        log(f"{t['name']!r}: {t['temp']}°F / set {t['set_heat']}°F  {'HEATING' if t['heating'] else 'idle'}  "
+        log(f"{t['label']!r}: {t['temp']}°F / set {t['set_heat']}°F  {'HEATING' if t['heating'] else 'idle'}{'' if t['connected'] else '  OFFLINE since '+str(t['last_status'])}  "
             f"eq={','.join(t['equipment']) or '-'}  mode={t['hvac_mode']}  climate={t['climate']}"
             f"{'  HOLD '+str(t['hold'].get('name') or t['hold'].get('type')) if t['hold'] else ''}")
     return rec
