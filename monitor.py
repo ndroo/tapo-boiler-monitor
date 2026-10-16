@@ -38,33 +38,43 @@ MODEL_DEFAULT = "claude-opus-5-5"
 ZONE_LED_CROP = (1040, 430, 1230, 640)      # Taco status LED column
 BOILER_DISPLAY_CROP = (88, 172, 545, 300)   # the P-950EH LCD panel
 
-# HTP FT-series boiler, P-950EH control. DHW is an indirect tank the control calls "Storage".
-BOILER_PROMPT = """These two images are a camera view of an HTP boiler's P-950EH controller;
-the second is a zoom of its LCD. Read the LCD and report what it shows.
+# HTP / Laars P-950EH control. Icon legend below is from the manual's Figure 36
+# (LCD Display Detail) - positions are exactly as they appear on the physical display.
+BOILER_PROMPT = """These two images are a camera view of an HTP / Laars P-950EH boiler
+controller LCD (the second image is a zoom). Read the LCD using this EXACT icon legend;
+the stated positions are where each icon sits on the display:
 
-Mode is shown by which demand icon is lit on the LCD:
-- HEATING (central heat / CH): a RADIATOR icon (several short vertical bars with a small
-  pipe/thermometer on top), to the LEFT of the big temperature number.
-- DHW (domestic hot water): a water-TANK / CYLINDER icon (a rounded tank shape with
-  horizontal coil lines inside), in the TOP ROW of the display. The control labels this
-  "Storage". If this tank icon is lit, the boiler is heating domestic hot water.
-- A FLAME icon (top right) means the burner is currently firing.
-- Small circle-with-triangle icons (right of the number) show which pump runs (CH vs Storage).
+- CH / central-heating demand: a RADIATOR icon (a block of several vertical bars/fins
+  with short horizontal lines), on the LEFT, just left of the big number. (It flashes
+  when there is a simultaneous heat + DHW/storage call.)
+- DHW (domestic hot water) demand: a SHOWER / FAUCET icon (a tap/showerhead with wavy
+  water lines or droplets), LOWER-LEFT, near the house icon.
+- Storage / "heating stored water" (indirect tank): a TANK / CONTAINER icon (a rounded
+  rectangle with horizontal lines inside), in the TOP ROW, just right of the snowflake.
+- FLAME ON (burner actually firing): a CROWN-OF-FLAMES icon (a row of ~4-5 pointed peaks,
+  like a small crown), on the RIGHT side, below the degrees C/F letters. This CROWN icon
+  is the ONLY true "is the burner firing" indicator - do not infer flame from anything else.
+- Pump running: a TRIANGLE-INSIDE-A-CIRCLE, on the RIGHT, below the flame icon.
+- Outdoor-temperature mode: a HOUSE-WITH-THERMOMETER icon, lower-left. NOTE it FLASHES when
+  no outdoor sensor is connected, so it often means only "no sensor", not any demand.
+- Also present (report only if clearly lit, via display_text): SNOWFLAKE (anti-freeze,
+  top-left), ((o)) + signal bars (communication, top center-right), padlock (lock, top
+  center), [i] (info/installer, top right).
 
-Judge an icon as lit only if it is clearly, solidly displayed (not a faint ghost segment).
-Return ONLY a JSON object:
+Judge an icon as LIT only if its segments are clearly, solidly on - a faint ghost = OFF.
+Assess each icon independently. Return ONLY a JSON object:
 {
-  "temperature": "<the big temperature shown, with units, or null>",
-  "mode": "heating | dhw | idle | unknown",
-  "flame_on": true/false,
-  "heat_demand_icon": true/false,
-  "dhw_storage_icon": true/false,
-  "error_codes": ["<any fault/error codes shown>"],
-  "display_text": "<other legible text on screen, verbatim>",
+  "temperature": "<the big number with units, or null>",
+  "flame_on": true/false,       // the CROWN-of-flames icon on the right is solidly lit
+  "ch_icon": true/false,        // radiator icon (left)
+  "dhw_icon": true/false,       // shower/faucet icon (lower-left)
+  "storage_icon": true/false,   // tank/container icon (top row)
+  "pump_on": true/false,        // triangle-in-circle (right)
+  "error_codes": ["<any fault codes shown, e.g. E04>"],
+  "display_text": "<any other legible text/number on screen, verbatim>",
   "legible": true/false
 }
-If neither demand icon is lit, mode is "idle". If the screen is off or unreadable, set
-legible=false and mode="unknown"."""
+If the screen is off or unreadable, set legible=false and all icon booleans false."""
 
 ZONE_PROMPT = """These two images show a Taco SR504-EXP zone switching relay. The first
 is the full scene; the second is a zoomed crop of the status LED column.
@@ -154,6 +164,21 @@ def send_sms(body):
     return False
 
 
+def derive_mode(r):
+    """Deterministically map the individual icon booleans to a single mode label.
+    Flame is reported separately (flame_on); a mode can be active with the burner
+    between cycles. Priority: storage > dhw > heating > idle."""
+    if not isinstance(r, dict) or r.get("legible") is False:
+        return "unknown"
+    if r.get("storage_icon"):
+        return "storage"
+    if r.get("dhw_icon"):
+        return "dhw"
+    if r.get("ch_icon"):
+        return "heating"
+    return "idle"
+
+
 def boiler_problems(reading):
     """Return a list of human-readable problem strings for the boiler reading."""
     probs = []
@@ -239,8 +264,11 @@ def cycle(client, model, out):
     try:
         p = cap.grab_once(out, cap.CAMERAS["boiler"], name="boiler", opts={"frames": 8, "sharpen": True, "quality": 95})
         imgs = [b64_image(p), b64_image(p, crop=BOILER_DISPLAY_CROP, zoom=3)]
-        result["boiler"] = {"image": os.path.basename(p), "reading": analyze(client, model, BOILER_PROMPT, imgs)}
-        log("boiler:", json.dumps(result["boiler"]["reading"]))
+        reading = analyze(client, model, BOILER_PROMPT, imgs)
+        if isinstance(reading, dict) and not reading.get("_error"):
+            reading["mode"] = derive_mode(reading)
+        result["boiler"] = {"image": os.path.basename(p), "reading": reading}
+        log("boiler:", json.dumps(reading))
     except Exception as e:
         result["boiler"] = {"_error": str(e)}
         log("boiler capture failed:", e)
