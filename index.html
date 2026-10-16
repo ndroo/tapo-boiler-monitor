@@ -192,12 +192,25 @@ const WX_DESC = {0:"clear",1:"mostly clear",2:"partly cloudy",3:"overcast",45:"f
 const ECO_SITE = /beatrice/i;         // only thermostats at this address belong to the boiler system
 // Everything logged is in °F (ecobee API, boiler LCD); the dashboard shows °C throughout.
 const F2C = f => (f==null||isNaN(f)) ? null : Math.round((Number(f)-32)*50/9)/10;
-const HEALTH_BAND_C = 2;              // a zone is healthy while room temp >= set-point - 2 °C
+// Health rule: the legal minimum is 21 °C. A zone is "cold" only when the room is BELOW 21 °C
+// AND more than 2 °C below its set-point. A set-point below 21 is fine, and a room at 23.5 with
+// someone asking for 26 is fine. After a set-point rise the system gets 6 h to catch up.
+const LEGAL_MIN_C = 21, HEALTH_BAND_C = 2, CATCHUP_H = 6;
 const zoneName = th => th ? (th.zone ? `Zone ${th.zone}` : th.name) : "";
-function health(t){                   // "ok" | "cold" | "offline" | null (unknown); offline zones are not counted
+function setRaisedWithin(id, at, hours){     // was this thermostat's set-point lower at any poll in the last `hours`?
+  const cur = thermIn(ECO.length?ECO[ECO.length-1]:null, id); let curSet=null;
+  for(let i=ECO.length-1;i>=0;i--){ const e=ECO[i]; if(e.ts>at) continue; const t=thermIn(e,id); if(t&&t.set!=null){ curSet=t.set; break; } }
+  if(curSet==null) return false;
+  let past=false;                           // also check the last poll before the window: that set-point was in force at its start
+  for(let i=ECO.length-1;i>=0;i--){ const e=ECO[i]; if(e.ts>at) continue; if(e.ts<at-hours*3600e3){ if(past) break; past=true; }
+    const t=thermIn(e,id); if(t && t.set!=null){ if(t.set < curSet-0.05) return true; if(past) break; } }
+  return false;
+}
+function health(t, at){               // "ok" | "catching" | "cold" | "offline" | null (unknown); offline zones are not counted
   if(!t) return null; if(!t.connected) return "offline";
   if(t.temp==null || t.set==null) return null;
-  return t.temp >= t.set - HEALTH_BAND_C ? "ok" : "cold";
+  if(t.temp >= LEGAL_MIN_C || t.temp >= t.set - HEALTH_BAND_C) return "ok";
+  return setRaisedWithin(t.id, at||Date.now(), CATCHUP_H) ? "catching" : "cold";
 }
 function parseEco(o){ return { ts: Date.parse(o.timestamp||o.local)||0,
   t:(o.thermostats||[]).filter(t=>ECO_SITE.test(((t.location||{}).streetAddress||"")+" "+((t.location||{}).name||"")))
@@ -227,8 +240,8 @@ function nearestEco(ts, maxMs=20*60e3){           // ECO is sorted by ts; binary
 function zoneTempCell(z, e){                        // "● 68.1°" with the set-point in the title
   const th=THERMS.find(t=>t.zone===z); const t=th&&e?thermIn(e,th.id):null;
   if(!t) return ""; if(!t.connected) return ` <span class="sub" title="thermostat offline">off-line</span>`;
-  const h=health(t);
-  return ` <span class="sub" style="font-variant-numeric:tabular-nums${h==="cold"?';color:#ff3b30':''}" title="${zoneName(th)}: ${t.temp}°C / set ${t.set}°C${t.heating?' · calling':''}${h==="cold"?' · below set-point':''}">${t.temp!=null?t.temp.toFixed(1):'—'}°${t.heating?'<span style="color:#ff7a1a">▲</span>':''}</span>`;
+  const h=health(t, e.ts);
+  return ` <span class="sub" style="font-variant-numeric:tabular-nums${h==="cold"?';color:#ff3b30':''}" title="${zoneName(th)}: ${t.temp}°C / set ${t.set}°C${t.heating?' · calling':''}${h==="cold"?' · cold (below 21 °C and 2 °C under set-point)':h==="catching"?' · catching up after a set-point rise':''}">${t.temp!=null?t.temp.toFixed(1):'—'}°${t.heating?'<span style="color:#ff7a1a">▲</span>':''}</span>`;
 }
 
 function tempNum(s){ if(s==null) return null; const m=String(s).match(/-?\d+(\.\d+)?/); return m?parseFloat(m[0]):null; }
@@ -425,7 +438,10 @@ function renderTimeline(rows, erows=[], wrows=[]){
       while(j+1<rs.length && col[j+1]===col[k] && (rs[j+1].ts-rs[j].ts)<=gapMs) j++;
       if(col[k]!=="off" && col[k]!=="unk"){
         const x0=x(rs[k].ts);
-        const end = (j+1<rs.length && (rs[j+1].ts-rs[j].ts)<=gapMs) ? rs[j+1].ts : Math.min(rs[j].ts+expMs, tmax);
+        // a bar runs to the next sample of ITS source; the last, still-current bar of every source
+        // runs to the shared right edge so 15-min and 30-min series end together
+        const end = (j+1<rs.length && (rs[j+1].ts-rs[j].ts)<=gapMs) ? rs[j+1].ts
+                  : (j===rs.length-1 && tmax-rs[j].ts<=gapMs) ? tmax : Math.min(rs[j].ts+expMs, tmax);
         const x1=x(end);
         if(x1-x0 >= 0.5) s+=`<rect x="${x0}" y="${y}" width="${Math.max(1.5,x1-x0)}" height="${h}" fill="${col[k]}" rx="2"/>`;
       }
@@ -471,8 +487,8 @@ function wireHover(host, xlo, xhi){
     const wxLine = wn ? `<br><span style="color:${COL_OUT}">■</span> outdoor ${wn.temp.toFixed(1)}°C${wn.feels!=null?' (feels '+wn.feels.toFixed(1)+'°)':''}${WX_DESC[wn.code]?' · '+WX_DESC[wn.code]:''}` : "";
     cur.setAttribute("x1",ax); cur.setAttribute("x2",ax); cur.setAttribute("opacity","0.6");
     const ecoLine = eb ? `<br><span style="color:#9aa0a6">ecobee ${fmt(eb.e.ts,true)}</span>` +
-      eb.e.t.map(t=>{ const th=THERMS.find(x=>x.id===t.id)||{}; const h=health(t);
-        return `<br><span style="color:${th.color||'#9aa0a6'}">■</span> ${zoneName(th)||t.name}: ${t.temp!=null?t.temp.toFixed(1)+'°':'—'} / set ${t.set!=null?t.set.toFixed(1)+'°':'—'}${t.heating?' <b style="color:#ff7a1a">HEAT</b>':''}${h==="cold"?' <b style="color:#ff3b30">below set-point</b>':h==="offline"?' <span style="color:#9aa0a6">offline</span>':''}${t.hold?' · hold':''}`; }).join("") : "";
+      eb.e.t.map(t=>{ const th=THERMS.find(x=>x.id===t.id)||{}; const h=health(t, eb.e.ts);
+        return `<br><span style="color:${th.color||'#9aa0a6'}">■</span> ${zoneName(th)||t.name}: ${t.temp!=null?t.temp.toFixed(1)+'°':'—'} / set ${t.set!=null?t.set.toFixed(1)+'°':'—'}${t.heating?' <b style="color:#ff7a1a">HEAT</b>':''}${h==="cold"?' <b style="color:#ff3b30">cold</b>':h==="catching"?' <span style="color:#ff9f0a">catching up</span>':h==="offline"?' <span style="color:#9aa0a6">offline</span>':''}${t.hold?' · hold':''}`; }).join("") : "";
     if(!best){ tip.innerHTML=(ecoLine+wxLine).replace(/^<br>/,""); tip.style.display="block"; tip.style.left=Math.max(xlo,Math.min(xhi,ax))+"px"; tip.style.top="2px"; return; }
     const r=best.r;
     tip.innerHTML = `<b>${fmt(r.ts,true)}</b>${r.clock?' · screen clock '+r.clock:''}<br>`+
@@ -525,8 +541,8 @@ function renderLive(){
   const lastE = ECO.length ? ECO[ECO.length-1] : null;
   const statCell = z => { const th=THERMS.find(t=>t.zone===z); const t=th&&lastE?thermIn(lastE,th.id):null; if(!t) return "";
     const col=th.color; if(!t.connected) return ` <span class="sub"><span style="color:${col}">■</span> stat offline</span>`;
-    const h=health(t);
-    return ` <span class="sub"><span style="color:${col}">■</span> ${t.temp!=null?t.temp.toFixed(1):'—'}°/${t.set!=null?t.set.toFixed(1):'—'}°${t.heating?' <b style="color:#ff7a1a">calling</b>':''}${h==="cold"?' <b style="color:#ff3b30">cold</b>':h==="ok"?' <span style="color:#34c759">ok</span>':''}</span>`; };
+    const h=health(t, lastE.ts);
+    return ` <span class="sub"><span style="color:${col}">■</span> ${t.temp!=null?t.temp.toFixed(1):'—'}°/${t.set!=null?t.set.toFixed(1):'—'}°${t.heating?' <b style="color:#ff7a1a">calling</b>':''}${h==="cold"?' <b style="color:#ff3b30">cold</b>':h==="catching"?' <span style="color:#ff9f0a">catching up</span>':h==="ok"?' <span style="color:#34c759">ok</span>':''}</span>`; };
   $("z-rows").innerHTML = [["Power","power",0],["Zone 1","zone1",1],["Zone 2","zone2",2],["Zone 3","zone3",3],["Zone 4 / priority","zone4",4]]
     .map(([k,key,z])=>{ const v=lastZ[key==="power"?"power":"z"+key.slice(-1)];
       return `<div class="row"><span class="k">${k}</span><span class="v">${z?statCell(z):""} ${pill(v,"ON","ok")}${px(key)}</span></div>`; }).join("")
@@ -535,29 +551,31 @@ function renderLive(){
   const probs=[]; if(last.codes&&last.codes.length) probs.push("error "+last.codes.join(", "));
   if(last.legible===false) probs.push("boiler screen unreadable");
   const b=$("banner"); const ageH = ALL.length ? (Date.now()-ALL[ALL.length-1].ts)/3600e3 : 99;
-  const cold = lastE ? lastE.t.filter(t=>health(t)==="cold").map(t=>`${zoneName(THERMS.find(x=>x.id===t.id))||t.name} ${t.temp.toFixed(1)}° vs set ${t.set.toFixed(1)}°`) : [];
+  const cold = lastE ? lastE.t.filter(t=>health(t,lastE.ts)==="cold").map(t=>`${zoneName(THERMS.find(x=>x.id===t.id))||t.name} ${t.temp.toFixed(1)}° vs set ${t.set.toFixed(1)}°`) : [];
   if(probs.length){ b.className="banner bad"; b.textContent="⚠️ "+probs.join(" · "); }
-  else if(cold.length){ b.className="banner warn"; b.textContent="🥶 Below set-point: "+cold.join(" · "); }
+  else if(cold.length){ b.className="banner warn"; b.textContent=`🥶 Below ${LEGAL_MIN_C} °C and more than ${HEALTH_BAND_C} °C under set-point: `+cold.join(" · "); }
   else if(ageH>1.25){ b.className="banner warn"; b.textContent=`⚠️ No new reading for ${ageH.toFixed(1)} h — the 30-minute job may not be running`; }
-  else { b.className="banner ok"; b.textContent="✅ All normal"+(lastE?` · ${lastE.t.filter(t=>health(t)==="ok").length} zone${lastE.t.filter(t=>health(t)==="ok").length===1?'':'s'} within ${HEALTH_BAND_C} °C of set-point${lastE.t.some(t=>health(t)==="offline")?' (offline sensors not counted)':''}`:""); }
+  else { const hs=lastE?lastE.t.map(t=>health(t,lastE.ts)):[]; const nOk=hs.filter(h=>h==="ok").length, nCatch=hs.filter(h=>h==="catching").length;
+    b.className="banner ok"; b.textContent="✅ All normal"+(lastE?` · ${nOk} zone${nOk===1?'':'s'} healthy${nCatch?`, ${nCatch} catching up after a set-point rise`:''}${hs.includes("offline")?' (offline sensors not counted)':''}`:""); }
 }
 
 function renderEcoCards(){
   const card=$("eco-card"); if(!ECO.length){ card.hidden=true; return; }
   card.hidden=false; const last=ECO[ECO.length-1];
   const age=(Date.now()-last.ts)/60e3;
-  const hs = last.t.map(health); const nOk=hs.filter(h=>h==="ok").length, nCold=hs.filter(h=>h==="cold").length, nOff=hs.filter(h=>h==="offline").length;
-  $("eco-sub").textContent = `${fmt(last.ts,true)}${age>40?' · stale ('+Math.round(age)+' min)':''} · ${nCold?nCold+' below set-point':'all healthy'} (${nOk+nCold} reporting${nOff?', '+nOff+' offline not counted':''}) · healthy = within ${HEALTH_BAND_C} °C of set-point`;
+  const hs = last.t.map(t=>health(t,last.ts)); const nOk=hs.filter(h=>h==="ok").length, nCold=hs.filter(h=>h==="cold").length, nCatch=hs.filter(h=>h==="catching").length, nOff=hs.filter(h=>h==="offline").length;
+  $("eco-sub").textContent = `${fmt(last.ts,true)}${age>40?' · stale ('+Math.round(age)+' min)':''} · ${nCold?nCold+' cold':'all healthy'}${nCatch?', '+nCatch+' catching up':''} (${nOk+nCold+nCatch} reporting${nOff?', '+nOff+' offline not counted':''}) · cold = below ${LEGAL_MIN_C} °C and more than ${HEALTH_BAND_C} °C under set-point, after a ${CATCHUP_H} h grace for set-point rises`;
   $("eco-tiles").innerHTML = THERMS.map(th=>{ const t=thermIn(last,th.id); if(!t) return "";
-    const h=health(t);
+    const h=health(t, last.ts);
     const badge = h==="offline" ? '<span class="pill off">offline · not counted</span>'
-      : h==="cold" ? '<span class="pill bad">below set-point</span>'
+      : h==="cold" ? `<span class="pill bad">cold · below ${LEGAL_MIN_C} °C</span>`
+      : h==="catching" ? '<span class="pill warn">catching up · set-point raised</span>'
       : h==="ok" ? '<span class="pill ok">healthy</span>' : '<span class="pill unk">no data</span>';
     const call = t.connected && t.heating ? ' <span class="pill warn">calling for heat</span>' : t.connected && t.fan ? ' <span class="pill off">fan</span>' : '';
     const sens = t.sensors.filter(s=>s.type!=="thermostat" && s.temp!=null).map(s=>`${s.name} ${Number(s.temp).toFixed(1)}°${s.occupied?' ·':''}`).join(", ");
     return `<div class="tile ${t.heating&&t.connected?'heat':''}" style="border-top:3px solid ${th.color}${t.connected?'':';opacity:.6'}">
       <div class="nm"><span>${zoneName(th)}</span><span>${badge}${call}</span></div>
-      <div class="big">${t.temp!=null?t.temp.toFixed(1):'—'}°C<small>set ${t.set!=null?t.set.toFixed(1):'—'}°${t.temp!=null&&t.set!=null?' · '+(t.temp-t.set>=0?'+':'')+(t.temp-t.set).toFixed(1)+'°':''}</small></div>
+      <div class="big">${t.temp!=null?t.temp.toFixed(1):'—'}°C<small>set ${t.set!=null?t.set.toFixed(1):'—'}°${t.temp!=null&&t.set!=null?' · '+(t.temp-t.set>=0?'+':'')+(t.temp-t.set).toFixed(1)+'°':''}${t.temp!=null&&t.temp<LEGAL_MIN_C&&t.connected?` · <span style="color:#ff9f0a">under ${LEGAL_MIN_C} °C</span>`:''}</small></div>
       <div class="sub">${t.climate||'—'}${t.hold?' · hold'+(t.hold.heat!=null?' '+t.hold.heat.toFixed(1)+'°':'')+(t.hold.until?' until '+t.hold.until.slice(11,16):''):''} · ${t.mode||''}${t.humidity!=null?' · '+t.humidity+'% RH':''}${t.eq.length?' · '+t.eq.join(', '):''}${!t.connected?' · last seen '+(t.last||'?'):''}</div>
       ${sens?`<div class="sub">${sens}</div>`:''}
     </div>`; }).join("");

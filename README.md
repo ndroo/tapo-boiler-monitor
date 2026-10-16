@@ -27,8 +27,11 @@ conditions go to `stills/weather_latest.json`. The dashboard draws them as the "
 panel on the timeline and the "Outdoor now" tile.
 
 All temperatures on the dashboard are shown in °C (the ecobee API and the boiler LCD log °F;
-conversion happens in the page). A zone counts as **healthy** while its room temperature is
-within 2 °C below its set-point; offline thermostats are shown but not counted.
+conversion happens in the page). Zone health follows the legal 21 °C minimum: a zone is **cold**
+only when the room is below 21 °C *and* more than 2 °C under its set-point (a set-point under 21 is
+fine; a room at 23.5 with someone asking for 26 is fine). After a set-point rise the system gets
+6 h to catch up ("catching up"). Offline thermostats are shown but not counted. Cold zones show on
+the dashboard banner only; nothing is texted.
 
 ## ecobee thermostats (every 15 minutes, free)
 
