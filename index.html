@@ -167,8 +167,16 @@
 <script>
 const $ = id => document.getElementById(id);
 const COL = { on:"#34c759", fire:"#ff7a1a", dhw:"#0a84ff", err:"#ff3b30" };
-const EXPECTED_MS = 900e3;           // one reading every 15 minutes
-const GAP_MS = 1.6*EXPECTED_MS;      // longer than this between readings = a missed slot
+const EXPECTED_MS = 900e3;           // current cadence: one reading every 15 minutes
+const GAP_MS = 1.6*EXPECTED_MS;      // longer than this between readings = a missed slot (current cadence)
+// The camera cadence has changed over time; a gap is only a "miss" against the cadence in force then.
+const CADENCE = [ {from:0, ms:3600e3},                               // hourly at first
+                  {from:Date.parse("2026-10-16T13:30:00Z"), ms:1800e3}, // every 30 min
+                  {from:Date.parse("2026-10-17T18:32:00Z"), ms:900e3} ]; // every 15 min
+const expectedAt = ts => { let e=CADENCE[0].ms; for(const c of CADENCE) if(ts>=c.from) e=c.ms; return e; };
+const gapAt = ts => 1.6*expectedAt(ts);
+function expectedCount(t0,t1){ // readings expected between two times under the cadence schedule
+  let n=0; for(let i=0;i<CADENCE.length;i++){ const a=Math.max(t0,CADENCE[i].from), b=Math.min(t1, i+1<CADENCE.length?CADENCE[i+1].from:t1); if(b>a) n+=(b-a)/CADENCE[i].ms; } return Math.round(n)+1; }
 let ALL = [], WINDOW_H = 168;
 const ECO_MS = 900e3;                 // ecobee is polled every 15 minutes
 const ECO_GAP_MS = 1.6*ECO_MS;
@@ -311,13 +319,13 @@ const BOILER_LANES = [
   {label:"Pump · DHW",   color:r=> onoff(r.dpump, COL.dhw)},
 ];
 const LH = 11, LG = 3, LH_ZONE = 18;  // zone lanes are split: top half thermostat call (orange), bottom half relay LED (green)
-function buildBoilerLanes(rows){ return BOILER_LANES.map(ln=>({label:ln.label, rs:rows, fn:ln.color, exp:EXPECTED_MS, gap:GAP_MS, src:"cam"})); }
+function buildBoilerLanes(rows){ return BOILER_LANES.map(ln=>({label:ln.label, rs:rows, fn:ln.color, exp:expectedAt, gap:gapAt, src:"cam"})); }
 function buildZoneLanes(rows, erows){
   const statFn = th => e=>{ const t=thermIn(e,th.id); return (!t || !t.connected) ? "unk" : t.heating ? COL.fire : "off"; };
-  const L = [{label:"Power", rs:rows, fn:r=>onoff(r.power, COL.on), exp:EXPECTED_MS, gap:GAP_MS, src:"cam"}];
+  const L = [{label:"Power", rs:rows, fn:r=>onoff(r.power, COL.on), exp:expectedAt, gap:gapAt, src:"cam"}];
   [1,2,3,4].forEach(z=>{
     const th = erows.length ? THERMS.find(t=>t.zone===z) : null;
-    L.push({label:z===4?"Zone 4 (priority)":`Zone ${z}`, color:th?th.color:null, rs:rows, fn:r=>onoff(r["z"+z], COL.on), exp:EXPECTED_MS, gap:GAP_MS, src:"cam", h:LH_ZONE,
+    L.push({label:z===4?"Zone 4 (priority)":`Zone ${z}`, color:th?th.color:null, rs:rows, fn:r=>onoff(r["z"+z], COL.on), exp:expectedAt, gap:gapAt, src:"cam", h:LH_ZONE,
             top: th ? {rs:erows, fn:statFn(th), exp:ECO_MS, gap:ECO_GAP_MS, src:"eco"} : null});
   });
   if(erows.length) THERMS.filter(t=>!t.zone || t.zone>4).forEach(th=>
@@ -367,11 +375,12 @@ function renderTimeline(rows, erows=[], wrows=[]){
 
   // where each source has NO data: before its first sample, between samples further apart than
   // its gap threshold, and after its last sample if that is stale
-  const gapsOf = (rs, exp, gap) => { const g=[]; if(!rs.length){ g.push([tmin,tmax]); return g; }
-    if(rs[0].ts > tmin+exp) g.push([tmin, rs[0].ts]);
-    for(let i=1;i<rs.length;i++){ if(rs[i].ts-rs[i-1].ts>gap) g.push([rs[i-1].ts+exp, rs[i].ts]); }
-    const last=rs[rs.length-1].ts; if(now-last>gap) g.push([last+exp, tmax]); return g; };
-  const camGaps=gapsOf(rows,EXPECTED_MS,GAP_MS), ecoGaps=gapsOf(erows,ECO_MS,ECO_GAP_MS);
+  const gapsOf = (rs, exp, gap) => { const E=t=>typeof exp==="function"?exp(t):exp, G=t=>typeof gap==="function"?gap(t):gap;
+    const g=[]; if(!rs.length){ g.push([tmin,tmax]); return g; }
+    if(rs[0].ts > tmin+E(tmin)) g.push([tmin, rs[0].ts]);
+    for(let i=1;i<rs.length;i++){ if(rs[i].ts-rs[i-1].ts>G(rs[i-1].ts)) g.push([rs[i-1].ts+E(rs[i-1].ts), rs[i].ts]); }
+    const last=rs[rs.length-1].ts; if(now-last>G(last)) g.push([last+E(last), tmax]); return g; };
+  const camGaps=gapsOf(rows,expectedAt,gapAt), ecoGaps=gapsOf(erows,ECO_MS,ECO_GAP_MS);
   const current = (rs, gap) => rs.length && now-rs[rs.length-1].ts<=gap;   // is this source still live? then its last value runs to the edge
 
   let s=`<svg viewBox="0 0 ${W} ${H}" height="${H}" xmlns="http://www.w3.org/2000/svg" font-family="inherit">`;
@@ -406,7 +415,7 @@ function renderTimeline(rows, erows=[], wrows=[]){
   const pts=rows.filter(r=>r.temp!=null);
   let dAttr="", prev=null;
   pts.forEach(r=>{ const X=x(r.ts),Y=yT(r.temp);
-    dAttr += (prev && (r.ts-prev.ts)>GAP_MS ? ` M${X},${Y}` : (dAttr?` L${X},${Y}`:`M${X},${Y}`)); prev=r; });
+    dAttr += (prev && (r.ts-prev.ts)>gapAt(prev.ts) ? ` M${X},${Y}` : (dAttr?` L${X},${Y}`:`M${X},${Y}`)); prev=r; });
   s+=`<path d="${dAttr}" fill="none" stroke="${COL.fire}" stroke-width="2"/>`;
   if(pts.length) hold(pts[pts.length-1].ts, yT(pts[pts.length-1].temp), COL.fire, current(rows,GAP_MS));
   if(pts.length<=160) pts.forEach(r=> s+=`<circle cx="${x(r.ts)}" cy="${yT(r.temp)}" r="2.5" fill="${r.flame?'#fff':COL.fire}" stroke="${COL.fire}" stroke-width="1.5"/>`);
@@ -450,14 +459,15 @@ function renderTimeline(rows, erows=[], wrows=[]){
   // --- lanes: a bar runs from its sample to the next sample of ITS source; the last bar of a
   //     live source runs to the shared right edge so 15-min and 30-min series end together ---
   function drawBars(rs, colorFn, y, h, expMs, gapMs){
+    const E=t=>typeof expMs==="function"?expMs(t):expMs, G=t=>typeof gapMs==="function"?gapMs(t):gapMs;
     const col=rs.map(colorFn); let k=0;
     while(k<rs.length){
       let j=k;
-      while(j+1<rs.length && col[j+1]===col[k] && (rs[j+1].ts-rs[j].ts)<=gapMs) j++;
+      while(j+1<rs.length && col[j+1]===col[k] && (rs[j+1].ts-rs[j].ts)<=G(rs[j].ts)) j++;
       if(col[k]!=="off" && col[k]!=="unk"){
         const x0=x(rs[k].ts);
-        const end = (j+1<rs.length && (rs[j+1].ts-rs[j].ts)<=gapMs) ? rs[j+1].ts
-                  : (j===rs.length-1 && now-rs[j].ts<=gapMs) ? tmax : Math.min(rs[j].ts+expMs, tmax);
+        const end = (j+1<rs.length && (rs[j+1].ts-rs[j].ts)<=G(rs[j].ts)) ? rs[j+1].ts
+                  : (j===rs.length-1 && now-rs[j].ts<=G(rs[j].ts)) ? tmax : Math.min(rs[j].ts+E(rs[j].ts), tmax);
         const x1=x(end);
         if(x1-x0 >= 0.5) s+=`<rect x="${x0}" y="${y}" width="${Math.max(1.5,x1-x0)}" height="${h}" fill="${col[k]}" rx="2"/>`;
       }
@@ -604,14 +614,14 @@ function renderStats(rows){
   if(!rows.length){ $("stats").innerHTML=""; return; }
   const last=rows[rows.length-1]; const RR=runRate();
   const spanH=Math.max(1,(last.ts-rows[0].ts)/3600e3);
-  const expected=Math.round(spanH*3600e3/EXPECTED_MS)+1, got=rows.length, cov=Math.min(100,Math.round(100*got/expected));
+  const expected=expectedCount(rows[0].ts,last.ts), got=rows.length, cov=Math.min(100,Math.round(100*got/expected));
   const tok=rows.reduce((a,r)=>a+(r.tokens||0),0);
   const fire=rows.filter(r=>r.flame).length, heat=rows.filter(r=>r.ch).length, dhw=rows.filter(r=>r.dhw).length;
   const temps=rows.map(r=>r.temp).filter(v=>v!=null);
   const S=(k,v,s)=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s||""}</div></div>`;
   $("stats").innerHTML =
     S("Last reading", fmt(last.ts,true), ((Date.now()-last.ts)/3600e3).toFixed(1)+" h ago") +
-    S("Coverage", cov+"%", `${got} of ~${expected} readings at one per ${Math.round(EXPECTED_MS/60e3)} min`) +
+    S("Coverage", cov+"%", `${got} of ~${expected} readings expected (cadence now ${Math.round(EXPECTED_MS/60e3)} min)`) +
     S("Temp range", temps.length?`${Math.min(...temps).toFixed(1)}–${Math.max(...temps).toFixed(1)}°C`:"—", "in window") +
     S("Burner firing", `${fire}/${got}`, `heat call ${heat} · DHW call ${dhw}`) +
     (RR ? S("Run rate", `$${RR.perDay.toFixed(2)}/day → $${RR.perMonth.toFixed(0)}/mo`,
