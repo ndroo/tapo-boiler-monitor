@@ -81,9 +81,9 @@ with the key icons boxed. IMAGE 2 is the full camera frame for context. IMAGE 3 
 of the LCD - read from IMAGE 3, use IMAGE 1 to identify what each segment means.
 
 Icon positions (as in the drawing, left to right):
-- TOP ROW: SUN (far left) = warm-weather shutdown; HOUSE-with-thermometer = outdoor
-  temperature mode (it FLASHES when no outdoor sensor is connected, so it carries no demand
-  information); SNOWFLAKE = anti-freeze; a small BOX with HORIZONTAL LINES = "Appliance is
+- TOP ROW: SUN (far left) = warm-weather shutdown; HOUSE-with-thermometer = outdoor-reset
+  (outdoor temperature) mode - normally lit on this boiler, carries no demand information;
+  SNOWFLAKE = anti-freeze; a small BOX with HORIZONTAL LINES = "Appliance is
   Meeting DHW Demand" (this is the ONLY hot-water indicator); [i] = status/installer mode;
   WRENCH = service reminder; ((o)) = communication state.
 - MIDDLE: time (AM/PM hh:mm) and day row on the left; a RADIATOR icon (vertical fins) just
@@ -332,6 +332,10 @@ def boiler_problems(reading):
         probs.append("error code(s): " + ", ".join(codes))
     if reading.get("legible") is False:
         probs.append("screen unreadable / display out")
+    elif reading.get("confidence") == "low":
+        # Still low after the confirmation pass: the readings themselves are suspect
+        # (camera moved, glare, lens dirty, display dim) - worth a text.
+        probs.append("low-confidence reading - check the boiler camera view")
     return probs
 
 
@@ -420,9 +424,8 @@ STATE_KEYS = ("flame_on", "dhw_icon", "ch_icon")
 def needs_confirmation(r, prev=None):
     """Why (or '' if not) a boiler reading deserves a second-model read.
     Always: an error code or an unreadable screen (both would alert).
-    Low confidence: only when the reading would CHANGE state versus the previous
-    reading (flame / DHW / heating icons, or temperature by >= 15F), so an hourly
-    'same as before, but blurry' frame doesn't double the cost."""
+    Low confidence: always (a reading that stays low-confidence after this pass
+    raises an alert, so the stronger model gets the first look)."""
     if not isinstance(r, dict) or r.get("_error"):
         return ""
     if r.get("error_codes"):
@@ -430,17 +433,9 @@ def needs_confirmation(r, prev=None):
     if r.get("legible") is False:
         return "unreadable"
     if r.get("confidence") == "low":
-        if not isinstance(prev, dict) or prev.get("_error") or prev.get("legible") is False:
-            return "low confidence, no previous reading"
-        changed = [k for k in STATE_KEYS if bool(r.get(k)) != bool(prev.get(k))]
-        try:
-            import re
-            a = float(re.search(r"-?\d+", str(r.get("temperature"))).group()); b = float(re.search(r"-?\d+", str(prev.get("temperature"))).group())
-            if abs(a - b) >= 15: changed.append("temperature")
-        except Exception:
-            pass
-        if changed:
-            return "low confidence + state change (" + ", ".join(changed) + ")"
+        # Low confidence now alerts (boiler_problems), so always give the stronger model a
+        # chance to resolve it first.
+        return "low confidence"
     return ""
 
 
