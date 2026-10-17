@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-17T04:11:04.012430+00:00",
-  "local": "2026-10-17T04:11:04",
+  "timestamp": "2026-10-17T04:41:18.637373+00:00",
+  "local": "2026-10-17T04:41:18",
   "boiler": {
-    "image": "boiler_20261017_041119.jpg",
+    "image": "boiler_20261017_044134.jpg",
     "reading": {
-      "temperature": "112\u00b0F",
-      "time_text": "7:36 PM",
+      "temperature": "109\u00b0F",
+      "time_text": "3:05",
       "day_text": "MON",
       "flame_on": false,
       "fan_on": false,
@@ -22,30 +22,30 @@
       "comm_icon": true,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "PM 7:36 MON 112 F",
+      "display_text": "3:05 MON 109 F",
       "legible": true,
       "confidence": "medium",
-      "notes": "Image is blurry; house and comm icons appear faintly dark at top, other icons not clearly lit; time and day partially legible.",
+      "notes": "House icon and comm icon appear faintly dark at top; the image is blurry, so lit state of the small icons is uncertain, and the time is read as 3:05 with no AM/PM clear.",
       "pump_on": false,
       "mode": "idle"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3261,
-      "output": 248,
+      "output": 262,
       "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261017_041138.jpg",
+    "image": "zone_20261017_044153.jpg",
     "pixels": {
       "power": {
-        "white": 0.883,
-        "mean": 240
+        "white": 0.888,
+        "mean": 241
       },
       "zone1": {
         "white": 0.0,
-        "mean": 87
+        "mean": 86
       },
       "zone2": {
         "white": 0.0,
@@ -67,7 +67,7 @@
       "zone3": false,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.88, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.89, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
