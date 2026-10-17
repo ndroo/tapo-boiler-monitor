@@ -1,85 +1,73 @@
 {
-  "timestamp": "2026-10-17T02:40:13.590223+00:00",
-  "local": "2026-10-17T02:40:13",
+  "timestamp": "2026-10-17T03:10:34.895900+00:00",
+  "local": "2026-10-17T03:10:34",
   "boiler": {
-    "image": "boiler_20261017_024029.jpg",
+    "image": "boiler_20261017_031050.jpg",
     "reading": {
-      "temperature": "118\u00b0F",
-      "time_text": "12:05",
+      "temperature": "116\u00b0F",
+      "time_text": "12:35",
       "day_text": "MON",
-      "flame_on": true,
-      "fan_on": true,
-      "ch_icon": true,
+      "flame_on": false,
+      "fan_on": false,
+      "ch_icon": false,
       "dhw_icon": false,
-      "boiler_pump": true,
-      "ch_pump": true,
+      "boiler_pump": false,
+      "ch_pump": false,
       "dhw_pump": false,
       "sun_icon": false,
       "house_icon": true,
       "snowflake_icon": false,
       "info_icon": false,
       "wrench_icon": false,
-      "comm_icon": false,
+      "comm_icon": true,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "12:05 MON 118 F",
+      "display_text": "12:35 MON 116 F",
       "legible": true,
       "confidence": "medium",
-      "notes": "The AM/PM indicator above the time is blurry, and the comm icon looks lighter than the other icons, so I judged it a ghost outline and marked it off.",
-      "first_pass": {
-        "model": "claude-sonnet-5-5",
-        "why_confirmed": "low confidence + state change (flame_on)",
-        "temperature": "118\u00b0F",
-        "confidence": "low",
-        "error_codes": [],
-        "legible": true,
-        "dhw_icon": false,
-        "ch_icon": true,
-        "flame_on": true
-      },
-      "pump_on": true,
-      "mode": "heating"
+      "notes": "House icon and comm icon appear dark in the top row, but the lower-right icons are not clearly visible; the clock shows 12:35 in the zoom versus 18:35 in the full frame, so the time is uncertain.",
+      "pump_on": false,
+      "mode": "idle"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
-      "input": 6522,
-      "output": 953,
-      "cache_read": 0,
-      "confirm_model": "claude-opus-5-5"
+      "input": 3261,
+      "output": 271,
+      "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261017_024056.jpg",
+    "image": "zone_20261017_031110.jpg",
     "pixels": {
       "power": {
-        "white": 0.888,
-        "mean": 238
+        "white": 0.914,
+        "mean": 241
       },
       "zone1": {
         "white": 0.0,
         "mean": 87
       },
       "zone2": {
-        "white": 0.157,
-        "mean": 143
+        "white": 0.0,
+        "mean": 57
       },
       "zone3": {
-        "white": 0.838,
-        "mean": 232
+        "white": 0.0,
+        "mean": 52
       },
       "zone4": {
         "white": 0.0,
-        "mean": 98
+        "mean": 49
       }
     },
     "reading": {
       "power": true,
       "zone1": false,
       "zone2": false,
-      "zone3": true,
+      "zone3": false,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.89, zone1 0.00, zone2 0.16, zone3 0.84, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.91, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
