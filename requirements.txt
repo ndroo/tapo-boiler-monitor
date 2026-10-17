@@ -5,3 +5,4 @@ anthropic>=0.125
 python-ecobee-api>=0.4.4
 cryptography>=42
 pyotp>=2.9
+numpy>=1.24

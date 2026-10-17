@@ -45,7 +45,20 @@ ZONE_FALLBACK_MODEL = "claude-opus-5-5"   # Sonnet twice called a dark zone-1 LE
 # Fixed-view crops (x1,y1,x2,y2) used to give the model a zoomed view of the small
 # indicators. Re-tune if a camera is moved.
 ZONE_LED_CROP = (1040, 430, 1230, 640)      # Taco status LED column
-BOILER_DISPLAY_CROP = (88, 172, 545, 300)   # the P-950EH LCD panel
+BOILER_DISPLAY_CROP = (88, 172, 545, 300)   # the P-950EH LCD panel (reference position)
+# The boiler camera gets nudged (it shifted ~250 px on 2026-10-17 and the fixed crop then
+# showed only the left half of the LCD). locate_lcd() finds the panel in each frame by
+# normalised cross-correlation against a template cut from a reference frame at
+# BOILER_DISPLAY_CROP, and falls back to the fixed crop when the match is weak.
+# Several templates may exist (docs/lcd_template*.png, one per camera position seen so
+# far); the best-scoring one wins. Add a new one (the located crop, unpadded, grayscale)
+# after a move if the match score drops to ~0.5.
+LCD_TEMPLATE_GLOB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "lcd_template*.png")
+LCD_MATCH_MIN = 0.45     # NCC score below this -> trust the fixed crop instead. Measured:
+                         # same-position frames 0.89-1.0, after a ~270 px camera shift 0.53,
+                         # a frame with no LCD at all (the zone panel) 0.37.
+LCD_PAD = (28, 12)       # widen the located box by this much (x, y) on each side so a
+                         # slightly larger/closer LCD is not clipped at the edges
 FULL_FRAME_WIDTH = 640                      # context frame sent alongside the zoom (cheap)
 LEGEND_IMAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "fig51_legend.png")
 
@@ -146,6 +159,61 @@ def b64_image(path, crop=None, zoom=1, width=None):
         img = img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)
     buf = io.BytesIO(); img.save(buf, "JPEG", quality=90)
     return "image/jpeg", base64.standard_b64encode(buf.getvalue()).decode()
+
+
+def _ncc_search(frame, tmpl, scale, centre=None, radius=0):
+    """Best zero-mean normalised cross-correlation of tmpl over frame (both PIL 'L'),
+    evaluated at 1/scale resolution. Returns (score, x, y) in that reduced frame."""
+    import numpy as np
+    f = np.asarray(frame.resize((frame.width // scale, frame.height // scale), Image.BILINEAR), dtype=np.float32)
+    t = np.asarray(tmpl.resize((tmpl.width // scale, tmpl.height // scale), Image.BILINEAR), dtype=np.float32)
+    t = t - t.mean(); tn = float(np.sqrt((t * t).sum())) or 1.0
+    th, tw = t.shape
+    if centre is None:
+        xs, ys = range(0, f.shape[1] - tw + 1), range(0, f.shape[0] - th + 1)
+    else:
+        cx, cy = centre
+        xs = range(max(0, cx - radius), min(f.shape[1] - tw, cx + radius) + 1)
+        ys = range(max(0, cy - radius), min(f.shape[0] - th, cy + radius) + 1)
+    best = (-2.0, 0, 0)
+    for y in ys:
+        rows = f[y:y + th]
+        for x in xs:
+            w = rows[:, x:x + tw]; w = w - w.mean(); d = float(np.sqrt((w * w).sum()))
+            if d == 0: continue
+            s = float((w * t).sum() / (d * tn))
+            if s > best[0]: best = (s, x, y)
+    return best
+
+
+def locate_lcd(path):
+    """Find the P-950EH LCD in a boiler frame. Coarse NCC search over the whole frame at
+    1/8 scale, then refine at full resolution. Returns (crop_box, score); the crop is the
+    template's size at the best match, or BOILER_DISPLAY_CROP if the match is weak or the
+    template/numpy are unavailable."""
+    try:
+        import glob
+        import numpy  # noqa: F401
+        frame = Image.open(path).convert("L")
+        score, x, y, tmpl = -2.0, 0, 0, None
+        for tp in sorted(glob.glob(LCD_TEMPLATE_GLOB)):
+            t = Image.open(tp).convert("L")
+            s8, x8, y8 = _ncc_search(frame, t, 8)
+            s, tx, ty = _ncc_search(frame, t, 1, centre=(x8 * 8, y8 * 8), radius=10)
+            if s > score:
+                score, x, y, tmpl = s, tx, ty, t
+        if tmpl is None:
+            raise FileNotFoundError(LCD_TEMPLATE_GLOB)
+        px, py = LCD_PAD
+        crop = (max(0, x - px), max(0, y - py),
+                min(frame.width, x + tmpl.width + px), min(frame.height, y + tmpl.height + py))
+        if score < LCD_MATCH_MIN:
+            log(f"boiler: LCD match weak ({score:.2f} at {crop[:2]}), using fixed crop")
+            return BOILER_DISPLAY_CROP, score
+        return crop, score
+    except Exception as e:
+        log("boiler: LCD locate failed, using fixed crop:", e)
+        return BOILER_DISPLAY_CROP, None
 
 
 def b64_file(path):
@@ -394,7 +462,8 @@ def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAU
         imgs = []
         if os.path.exists(LEGEND_IMAGE):
             imgs.append(b64_file(LEGEND_IMAGE))
-        imgs += [b64_image(p, width=FULL_FRAME_WIDTH), b64_image(p, crop=BOILER_DISPLAY_CROP, zoom=3)]
+        lcd_crop, lcd_score = locate_lcd(p)
+        imgs += [b64_image(p, width=FULL_FRAME_WIDTH), b64_image(p, crop=lcd_crop, zoom=3)]
         reading, usage = analyze(client, model, BOILER_PROMPT, imgs, BOILER_SCHEMA)
         why = needs_confirmation(reading, previous_boiler_reading(out)) if confirm_model else ""
         if isinstance(reading, dict) and reading.get("confidence") == "low" and not why:
@@ -412,7 +481,8 @@ def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAU
         if isinstance(reading, dict) and not reading.get("_error"):
             reading["pump_on"] = bool(reading.get("boiler_pump") or reading.get("ch_pump") or reading.get("dhw_pump"))
             reading["mode"] = derive_mode(reading)
-        result["boiler"] = {"image": os.path.basename(p), "reading": reading, "usage": usage}
+        result["boiler"] = {"image": os.path.basename(p), "reading": reading, "usage": usage,
+                            "lcd": {"crop": list(lcd_crop), "match": None if lcd_score is None else round(lcd_score, 3)}}
         log("boiler:", json.dumps(reading))
     except Exception as e:
         result["boiler"] = {"_error": str(e)}
