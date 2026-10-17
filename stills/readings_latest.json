@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-17T05:11:31.190577+00:00",
-  "local": "2026-10-17T05:11:31",
+  "timestamp": "2026-10-17T05:42:10.068679+00:00",
+  "local": "2026-10-17T05:42:10",
   "boiler": {
-    "image": "boiler_20261017_051147.jpg",
+    "image": "boiler_20261017_054225.jpg",
     "reading": {
-      "temperature": "107\u00b0F",
-      "time_text": "3:36 PM",
+      "temperature": "105\u00b0F",
+      "time_text": "3:07 AM",
       "day_text": null,
       "flame_on": false,
       "fan_on": false,
@@ -22,26 +22,26 @@
       "comm_icon": false,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "3:36 107\u00b0F",
+      "display_text": "3:07 AM 105\u00b0F",
       "legible": true,
-      "confidence": "low",
-      "notes": "Zoom is blurry; the clock is partly legible (3:36 with an AM/PM marker unclear) and the only dark segments are the digits, with no icons clearly solid.",
+      "confidence": "medium",
+      "notes": "Time reads 3:07 but the camera timestamp shows 00:42, and the AM/PM and day segments are hard to resolve; no icons appear clearly dark in the blurry zoom.",
       "pump_on": false,
       "mode": "idle"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3261,
-      "output": 256,
+      "output": 265,
       "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261017_051206.jpg",
+    "image": "zone_20261017_054244.jpg",
     "pixels": {
       "power": {
-        "white": 0.898,
-        "mean": 242
+        "white": 0.909,
+        "mean": 243
       },
       "zone1": {
         "white": 0.0,
@@ -49,15 +49,15 @@
       },
       "zone2": {
         "white": 0.0,
-        "mean": 56
+        "mean": 55
       },
       "zone3": {
         "white": 0.0,
-        "mean": 52
+        "mean": 51
       },
       "zone4": {
         "white": 0.0,
-        "mean": 49
+        "mean": 48
       }
     },
     "reading": {
@@ -67,7 +67,7 @@
       "zone3": false,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.90, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.91, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
