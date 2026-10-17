@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-17T04:11:02.592743+00:00",
-  "local": "2026-10-17T04:11:02",
+  "timestamp": "2026-10-17T04:26:11.962735+00:00",
+  "local": "2026-10-17T04:26:11",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,7 +14,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 04:07:06",
+      "last_status": "2026-10-17 04:18:36",
       "hvac_mode": "heat",
       "temp": 68.4,
       "humidity": 56,
@@ -85,10 +85,10 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 04:10:00",
+      "last_status": "2026-10-17 04:24:30",
       "hvac_mode": "heat",
       "temp": 72.1,
-      "humidity": 52,
+      "humidity": 51,
       "set_heat": 69.8,
       "set_cool": 82.4,
       "equipment": [],
@@ -102,7 +102,7 @@
           "type": "thermostat",
           "temp": 72.1,
           "occupied": false,
-          "humidity": 52
+          "humidity": 51
         }
       ]
     },
@@ -118,7 +118,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 04:11:02",
+      "last_status": "2026-10-17 04:21:16",
       "hvac_mode": "auto",
       "temp": 69.6,
       "humidity": 58,
@@ -186,9 +186,9 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-17 04:09:14",
+      "last_status": "2026-10-17 04:24:14",
       "hvac_mode": "off",
-      "temp": 65.2,
+      "temp": 65.4,
       "humidity": 49,
       "set_heat": 66.2,
       "set_cool": 66.2,
@@ -206,7 +206,7 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 65.2,
+          "temp": 65.4,
           "occupied": null,
           "humidity": 49
         }
@@ -224,7 +224,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-17 04:08:57",
+      "last_status": "2026-10-17 04:23:57",
       "hvac_mode": "off",
       "temp": 62.9,
       "humidity": 52,
