@@ -19,7 +19,7 @@ commit_results() {
   done
   [ -f stills/ecobee.jsonl ] && tail -n 10000 stills/ecobee.jsonl > stills/ecobee.jsonl.tmp && mv stills/ecobee.jsonl.tmp stills/ecobee.jsonl
   for f in stills/boiler_latest.jpg stills/zone_latest.jpg stills/readings.jsonl stills/readings_latest.json \
-           stills/alert_state.json stills/alerts.jsonl stills/ecobee.jsonl stills/ecobee_latest.json ecobee_token.enc \
+           stills/alert_state.json stills/lcd_trust.json stills/lcd_state.json stills/alerts.jsonl stills/ecobee.jsonl stills/ecobee_latest.json ecobee_token.enc \
            stills/weather.jsonl stills/weather_latest.json stills/weather_geo.json; do
     [ -f "$f" ] && git add -f "$f"
   done

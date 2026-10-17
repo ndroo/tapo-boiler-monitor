@@ -80,9 +80,11 @@ def _cell(dark, c):
     segs = tuple(1 if v > c["thr"] else 0 for v in vals)
     return ("blank" if segs == (0,) * 7 else DIG.get(segs, "?")), segs, [round(v) for v in vals]
 
-def read(path, crop, template):
-    """Full pixel read. Returns a dict; 'ok' False with 'error' if the frame can't be trusted."""
-    c = _calib()
+def read(path, crop, template, learned=None):
+    """Full pixel read. Returns a dict; 'ok' False with 'error' if the frame can't be trusted.
+    learned: {icon_name: {"thr": float}} promotions confirmed in production (overrides the
+    provisional calibration for that icon)."""
+    c = _calib(); learned = learned or {}
     flat = np.asarray(flatten(path, crop, template), dtype=np.float32)
     ncc, dx, dy = register(flat)
     out = {"ok": True, "register": {"ncc": round(ncc, 3), "dx": dx, "dy": dy}, "scores": {}, "provisional": []}
@@ -92,8 +94,9 @@ def read(path, crop, template):
     dark = c["_off"] - a
     for name, ic in c["icons"].items():
         x0, y0, x1, y1 = ic["box"]; v = float(dark[y0:y1, x0:x1].mean())
-        out["scores"][name] = round(v, 1); out[name] = bool(v > ic["thr"])
-        if ic.get("provisional"):
+        thr = learned.get(name, {}).get("thr", ic["thr"])
+        out["scores"][name] = round(v, 1); out[name] = bool(v > thr)
+        if ic.get("provisional") and name not in learned:
             out["provisional"].append(name)
     cells = [_cell(dark, cc) for cc in c["digits"]["cells"]]
     out["digit_cells"] = [{"digit": d, "segs": s, "values": v} for d, s, v in cells]
