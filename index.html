@@ -29,10 +29,10 @@
   .banner.warn{ display:block; background:rgba(255,159,10,.12); color:var(--warn); border:1px solid rgba(255,159,10,.3); }
 
   /* stats strip */
-  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-bottom:16px; }
   .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
   .stat .k { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
-  .stat .v { font-size:18px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .stat .v { font-size:18px; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .stat .s { color:var(--muted); font-size:12px; }
 
   /* live cards */
@@ -621,15 +621,13 @@ function renderStats(rows){
   const S=(k,v,s)=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s||""}</div></div>`;
   $("stats").innerHTML =
     S("Last reading", fmt(last.ts,true), ((Date.now()-last.ts)/3600e3).toFixed(1)+" h ago") +
-    S("Coverage", cov+"%", `${got} of ~${expected} readings expected (cadence now ${Math.round(EXPECTED_MS/60e3)} min)`) +
+    S("Coverage", cov+"%", `${got} of ~${expected} expected · every ${Math.round(EXPECTED_MS/60e3)} min`) +
     S("Temp range", temps.length?`${Math.min(...temps).toFixed(1)}–${Math.max(...temps).toFixed(1)}°C`:"—", "in window") +
     S("Burner firing", `${fire}/${got}`, `heat call ${heat} · DHW call ${dhw}`) +
-    (RR ? S("Run rate", `$${RR.perDay.toFixed(2)}/day → $${RR.perMonth.toFixed(0)}/mo`,
-             `last ${RR.hours.toFixed(1)} h: $${RR.spend.toFixed(2)} on ${RR.modelCalls} model check${RR.modelCalls===1?'':'s'} (${Object.entries(RR.byModel).map(([m,n])=>shortModel(m)+' '+n).join(', ')||'none'}) · ${RR.pixelOnly} of ${RR.n} cycles pixels-only`)
-        : S("Run rate", "—", "no readings in the last 24 h")) +
-    (last.trust ? S("Pixel trust", `${Math.min(...Object.values(last.trust.streaks||{0:0}))} / ${TRUST_FULL}`,
-             `agreements in a row before routine model checks stop · ${last.trust.learned_icons&&last.trust.learned_icons.length?'learned icons: '+last.trust.learned_icons.join(', '):'no new icons learned yet'}`)
-        : S("API tokens", tok.toLocaleString(), "in window · latest read by "+shortModel(last.model))) +
+    (RR ? S("Model spend", `$${RR.perMonth.toFixed(0)}/mo`,
+             `$${RR.perDay.toFixed(2)}/day · ${RR.modelCalls} check${RR.modelCalls===1?'':'s'} in ${RR.hours.toFixed(0)} h (${Object.entries(RR.byModel).map(([m,n])=>shortModel(m).replace(' 5.5','')+' '+n).join(', ')||'none'})`
+             + (last.trust ? ` · trust ${Math.min(...Object.values(last.trust.streaks||{0:0}))}/${TRUST_FULL}` : ''))
+        : S("Model spend", "—", "no readings in the last 24 h")) +
     (WXL&&WXL.temp_c!=null ? S("Outdoor now", `${Number(WXL.temp_c).toFixed(1)}°C`, `feels ${WXL.apparent_c!=null?Number(WXL.apparent_c).toFixed(1)+'°':'—'} · ${WXL.humidity??'—'}% RH · wind ${WXL.wind_kmh??'—'} km/h${WX_DESC[WXL.weather_code]?' · '+WX_DESC[WXL.weather_code]:''}`) : "");
 }
 
