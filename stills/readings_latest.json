@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-10-17T12:12:47.973405+00:00",
-  "local": "2026-10-17T12:12:47",
+  "timestamp": "2026-10-17T12:43:08.730639+00:00",
+  "local": "2026-10-17T12:43:08",
   "boiler": {
-    "image": "boiler_20261017_121303.jpg",
+    "image": "boiler_20261017_124324.jpg",
     "reading": {
       "temperature": "121\u00b0F",
-      "time_text": "9:38",
-      "day_text": "MON",
+      "time_text": "10:08 PM",
+      "day_text": null,
       "flame_on": false,
       "fan_on": false,
       "ch_icon": true,
@@ -22,54 +22,42 @@
       "comm_icon": false,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "9:38 MON 121",
+      "display_text": "10:08 PM 121 F",
       "legible": true,
-      "confidence": "low",
-      "notes": "The zoom cuts off the right side, so the flame, fan, pump icons and the F/C unit could not be verified; the temperature and unit come from the low-resolution full frame, and AM/PM was unclear.",
-      "first_pass": {
-        "model": "claude-sonnet-5-5",
-        "why_confirmed": "low confidence + state change (flame_on, temperature)",
-        "temperature": "12",
-        "confidence": "low",
-        "error_codes": [],
-        "legible": true,
-        "dhw_icon": false,
-        "ch_icon": true,
-        "flame_on": false
-      },
+      "confidence": "medium",
+      "notes": "Time reads about 10:08 with a PM marker; the radiator and house icons look dark, but the right-side icons are small and not clearly lit in the zoom.",
       "pump_on": false,
       "mode": "heating"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
-      "input": 6522,
-      "output": 820,
-      "cache_read": 0,
-      "confirm_model": "claude-opus-5-5"
+      "input": 3261,
+      "output": 254,
+      "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261017_121330.jpg",
+    "image": "zone_20261017_124343.jpg",
     "pixels": {
       "power": {
-        "white": 0.797,
-        "mean": 223
+        "white": 0.751,
+        "mean": 215
       },
       "zone1": {
         "white": 0.0,
         "mean": 90
       },
       "zone2": {
-        "white": 0.193,
-        "mean": 140
+        "white": 0.178,
+        "mean": 134
       },
       "zone3": {
-        "white": 0.756,
-        "mean": 217
+        "white": 0.721,
+        "mean": 212
       },
       "zone4": {
         "white": 0.0,
-        "mean": 96
+        "mean": 98
       }
     },
     "reading": {
@@ -79,7 +67,7 @@
       "zone3": true,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.80, zone1 0.00, zone2 0.19, zone3 0.76, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.75, zone1 0.00, zone2 0.18, zone3 0.72, zone4 0.00"
     }
   },
   "alert": {

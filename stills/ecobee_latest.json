@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-17T12:28:03.749827+00:00",
-  "local": "2026-10-17T12:28:03",
+  "timestamp": "2026-10-17T12:43:07.259679+00:00",
+  "local": "2026-10-17T12:43:07",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,10 +14,10 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 12:23:03",
+      "last_status": "2026-10-17 12:37:04",
       "hvac_mode": "heat",
-      "temp": 68.7,
-      "humidity": 51,
+      "temp": 68.8,
+      "humidity": 52,
       "set_heat": 68.9,
       "set_cool": 77.9,
       "equipment": [],
@@ -29,9 +29,9 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 68.7,
-          "occupied": true,
-          "humidity": 51
+          "temp": 68.8,
+          "occupied": false,
+          "humidity": 52
         }
       ]
     },
@@ -85,9 +85,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 12:26:14",
+      "last_status": "2026-10-17 12:41:59",
       "hvac_mode": "heat",
-      "temp": 70.8,
+      "temp": 71.3,
       "humidity": 48,
       "set_heat": 71.6,
       "set_cool": 77.9,
@@ -102,8 +102,8 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 70.8,
-          "occupied": true,
+          "temp": 71.3,
+          "occupied": false,
           "humidity": 48
         }
       ]
@@ -120,10 +120,10 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 12:26:14",
+      "last_status": "2026-10-17 12:42:00",
       "hvac_mode": "auto",
-      "temp": 68.7,
-      "humidity": 58,
+      "temp": 69.2,
+      "humidity": 55,
       "set_heat": 69.6,
       "set_cool": 74.6,
       "equipment": [
@@ -138,7 +138,7 @@
         {
           "name": "Master bedroom",
           "type": "ecobee3_remote_sensor",
-          "temp": 68.7,
+          "temp": 69.2,
           "occupied": false,
           "humidity": null
         },
@@ -166,9 +166,9 @@
         {
           "name": "152 Strachan Ave",
           "type": "thermostat",
-          "temp": 69.5,
-          "occupied": true,
-          "humidity": 58
+          "temp": 72.7,
+          "occupied": false,
+          "humidity": 55
         },
         {
           "name": "Basement",
@@ -191,10 +191,10 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-17 12:24:55",
+      "last_status": "2026-10-17 12:40:55",
       "hvac_mode": "off",
-      "temp": 64.8,
-      "humidity": 47,
+      "temp": 64.7,
+      "humidity": 48,
       "set_heat": 66.2,
       "set_cool": 66.2,
       "equipment": [],
@@ -211,9 +211,9 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 64.8,
+          "temp": 64.7,
           "occupied": null,
-          "humidity": 47
+          "humidity": 48
         }
       ]
     },
@@ -229,10 +229,10 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-17 12:23:53",
+      "last_status": "2026-10-17 12:39:53",
       "hvac_mode": "off",
       "temp": 61.8,
-      "humidity": 51,
+      "humidity": 50,
       "set_heat": 68.0,
       "set_cool": 77.9,
       "equipment": [],
@@ -246,7 +246,7 @@
           "type": "thermostat",
           "temp": 61.8,
           "occupied": null,
-          "humidity": 51
+          "humidity": 50
         }
       ]
     }
