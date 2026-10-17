@@ -19,21 +19,41 @@
       "snowflake_icon": false,
       "info_icon": false,
       "wrench_icon": false,
-      "comm_icon": false,
+      "comm_icon": true,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "AM 12:38 TUE 10(9)",
+      "display_text": "AM 12:38 TUE 109 F",
       "legible": true,
       "confidence": "medium",
-      "notes": "Zoom crops the temperature at the right edge; the full frame shows 109, and the right-side icons are not visible in the zoom and appear unlit.",
+      "notes": "House icon and comm icon appear dark; the house may be flashing and the time digits are blurry (12:38 vs 12:39).",
       "pump_on": false,
-      "mode": "idle"
+      "mode": "idle",
+      "corrected": {
+        "when": "2026-10-17T15:21:46+00:00",
+        "model": "claude-sonnet-5-5",
+        "reason": "camera moved; re-read with auto-located LCD crop",
+        "was": {
+          "temperature": "109\u00b0F",
+          "mode": "idle",
+          "flame_on": false,
+          "confidence": "medium"
+        }
+      }
     },
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3261,
       "output": 258,
       "cache_read": 0
+    },
+    "lcd": {
+      "crop": [
+        329,
+        172,
+        842,
+        324
+      ],
+      "match": 0.979
     }
   },
   "zone": {
