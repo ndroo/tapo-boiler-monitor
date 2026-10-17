@@ -1,0 +1,239 @@
+{
+ "out_size": [
+  640,
+  220
+ ],
+ "pad": 6,
+ "corners": {
+  "lcd_template.png": [
+   [
+    44,
+    21
+   ],
+   [
+    340,
+    34
+   ],
+   [
+    320,
+    143
+   ],
+   [
+    24,
+    117
+   ]
+  ],
+  "lcd_template2.png": [
+   [
+    24,
+    44
+   ],
+   [
+    333,
+    39
+   ],
+   [
+    320,
+    145
+   ],
+   [
+    12,
+    139
+   ]
+  ]
+ },
+ "ref": "lcd_flat_ref.png",
+ "off": "lcd_flat_off.png",
+ "mask_exclude": [
+  [
+   290,
+   50,
+   500,
+   160
+  ],
+  [
+   30,
+   50,
+   210,
+   175
+  ]
+ ],
+ "min_ncc": 0.45,
+ "icons": {
+  "radiator": {
+   "box": [
+    219,
+    53,
+    243,
+    93
+   ],
+   "thr": 43.7,
+   "on_min": 55.3,
+   "off_max": 32.0
+  },
+  "flame": {
+   "box": [
+    576,
+    76,
+    600,
+    100
+   ],
+   "thr": 29.6,
+   "on_min": 37.4,
+   "off_max": 21.8
+  },
+  "fan": {
+   "box": [
+    530,
+    73,
+    554,
+    97
+   ],
+   "thr": 31.8,
+   "on_min": 39.6,
+   "off_max": 23.9
+  },
+  "boiler_pump": {
+   "box": [
+    539,
+    114,
+    563,
+    138
+   ],
+   "thr": 32.9,
+   "on_min": 44.9,
+   "off_max": 20.9
+  },
+  "ch_pump": {
+   "box": [
+    590,
+    117,
+    614,
+    141
+   ],
+   "thr": 40.9,
+   "on_min": 51.0,
+   "off_max": 30.7
+  },
+  "house": {
+   "box": [
+    212,
+    2,
+    256,
+    34
+   ],
+   "thr": 23.0,
+   "on_min": 33.0,
+   "off_max": null
+  },
+  "comm": {
+   "box": [
+    578,
+    36,
+    612,
+    60
+   ],
+   "thr": 10.6,
+   "on_min": 20.6,
+   "off_max": null
+  },
+  "sun": {
+   "box": [
+    49,
+    0,
+    73,
+    20
+   ],
+   "thr": NaN,
+   "off_max": NaN,
+   "provisional": true
+  },
+  "snowflake": {
+   "box": [
+    280,
+    14,
+    304,
+    38
+   ],
+   "thr": 25.5,
+   "off_max": 13.5,
+   "provisional": true
+  },
+  "dhw_box": {
+   "box": [
+    329,
+    16,
+    353,
+    40
+   ],
+   "thr": 22.0,
+   "off_max": 10.0,
+   "provisional": true
+  },
+  "info": {
+   "box": [
+    384,
+    20,
+    408,
+    44
+   ],
+   "thr": 20.5,
+   "off_max": 8.5,
+   "provisional": true
+  },
+  "wrench": {
+   "box": [
+    533,
+    22,
+    557,
+    46
+   ],
+   "thr": 22.6,
+   "off_max": 10.6,
+   "provisional": true
+  },
+  "dhw_pump": {
+   "box": [
+    571,
+    157,
+    595,
+    181
+   ],
+   "thr": 18.9,
+   "off_max": 6.9,
+   "provisional": true
+  }
+ },
+ "digits": {
+  "cells": [
+   {
+    "x": 317,
+    "y": 58,
+    "w": 40,
+    "h": 78,
+    "t": 8,
+    "sk": 4,
+    "thr": 30
+   },
+   {
+    "x": 371,
+    "y": 58,
+    "w": 44,
+    "h": 82,
+    "t": 10,
+    "sk": 4,
+    "thr": 30
+   },
+   {
+    "x": 423,
+    "y": 62,
+    "w": 42,
+    "h": 82,
+    "t": 12,
+    "sk": 4,
+    "thr": 30
+   }
+  ]
+ },
+ "calibrated": "2026-10-17 from 60 frames 2026-10-16T02:23Z..2026-10-17T14:43Z"
+}

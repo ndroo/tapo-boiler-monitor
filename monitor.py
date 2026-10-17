@@ -186,6 +186,9 @@ def _ncc_search(frame, tmpl, scale, centre=None, radius=0):
     return best
 
 
+LCD_LAST = {"template": None}   # which template the last locate_lcd() matched (lcd_pixels needs it)
+
+
 def _lcd_state_path(out): return os.path.join(out, "lcd_state.json")
 
 
@@ -205,6 +208,7 @@ def locate_lcd(path, out=None):
             s, tx, ty = _ncc_search(frame, t, 1, centre=(x8 * 8, y8 * 8), radius=10)
             if s > score:
                 score, x, y, tmpl = s, tx, ty, t
+                LCD_LAST["template"] = tp
         if tmpl is None:
             raise FileNotFoundError(LCD_TEMPLATE_GLOB)
         px, py = LCD_PAD
@@ -517,6 +521,16 @@ def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAU
                 reading["confidence"] = "low"
         result["boiler"] = {"image": os.path.basename(p), "reading": reading, "usage": usage,
                             "lcd": {"crop": list(lcd_crop), "match": None if lcd_score is None else round(lcd_score, 3)}}
+        # Shadow read from pixels (no model) - logged next to the model read for comparison;
+        # the dashboard and alerts still use the model until this is switched over.
+        try:
+            import lcd_pixels
+            px = lcd_pixels.read(p, lcd_crop, LCD_LAST.get("template"))
+            result["boiler"]["pixels"] = px
+            log("boiler pixels:", json.dumps({k: px.get(k) for k in ("mode", "flame", "fan", "boiler_pump", "ch_pump", "dhw_box", "dhw_pump", "temperature_f", "ok", "register")}))
+        except Exception as e:
+            result["boiler"]["pixels"] = {"ok": False, "error": f"{type(e).__name__}: {str(e)[:160]}"}
+            log("boiler pixels failed:", e)
         log("boiler:", json.dumps(reading))
     except Exception as e:
         result["boiler"] = {"_error": str(e)}
