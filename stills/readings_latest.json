@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-17T14:42:32.309905+00:00",
-  "local": "2026-10-17T14:42:32",
+  "timestamp": "2026-10-17T15:12:45.408290+00:00",
+  "local": "2026-10-17T15:12:45",
   "boiler": {
-    "image": "boiler_20261017_144248.jpg",
+    "image": "boiler_20261017_151301.jpg",
     "reading": {
-      "temperature": "113\u00b0",
-      "time_text": "12:07",
+      "temperature": "109\u00b0F",
+      "time_text": "12:38 AM",
       "day_text": "TUE",
       "flame_on": false,
       "fan_on": false,
@@ -22,42 +22,42 @@
       "comm_icon": false,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "AM 12:07 TUE 113\u00b0",
+      "display_text": "AM 12:38 TUE 10(9)",
       "legible": true,
       "confidence": "medium",
-      "notes": "The house icon is lit but may be flashing; the temperature units and the right-side icons are hard to see at this resolution, so they are reported as off.",
+      "notes": "Zoom crops the temperature at the right edge; the full frame shows 109, and the right-side icons are not visible in the zoom and appear unlit.",
       "pump_on": false,
       "mode": "idle"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3261,
-      "output": 249,
+      "output": 258,
       "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261017_144307.jpg",
+    "image": "zone_20261017_151320.jpg",
     "pixels": {
       "power": {
-        "white": 0.772,
-        "mean": 223
+        "white": 0.802,
+        "mean": 227
       },
       "zone1": {
         "white": 0.0,
-        "mean": 89
+        "mean": 92
       },
       "zone2": {
         "white": 0.0,
-        "mean": 54
+        "mean": 55
       },
       "zone3": {
         "white": 0.0,
-        "mean": 50
+        "mean": 49
       },
       "zone4": {
         "white": 0.0,
-        "mean": 46
+        "mean": 47
       }
     },
     "reading": {
@@ -67,7 +67,7 @@
       "zone3": false,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.77, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.80, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
