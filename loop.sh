@@ -26,10 +26,33 @@ commit_results() {
   if git diff --cached --quiet; then return 0; fi
   git commit -q -m "$1 $(date -u +%Y-%m-%dT%H:%MZ)"
   for attempt in 1 2 3; do
-    git pull -q --rebase origin main && git push -q origin main && return 0
+    if git pull -q --rebase origin main || resolve_rebase; then
+      git push -q origin main && return 0
+    fi
+    git rebase --abort 2>/dev/null
     echo "push attempt $attempt failed; retrying"; sleep 10
   done
-  echo "WARNING: could not push results"; return 1
+  echo "WARNING: could not push results"; git rebase --abort 2>/dev/null; return 1
+}
+
+resolve_rebase() {
+  # A rebase conflict means someone edited the data files upstream while this cycle ran
+  # (e.g. a manual correction of readings.jsonl). Append-only logs: keep upstream and
+  # re-append this cycle's new lines (.gitattributes merge=union normally prevents the
+  # conflict). Snapshots (*_latest.json, jpgs, state files): this cycle's copy wins.
+  local f
+  for f in $(git diff --name-only --diff-filter=U); do
+    case "$f" in
+      *.jsonl)
+        git show ":2:$f" > "$f.ours" 2>/dev/null || cp "$f" "$f.ours"     # upstream
+        git show ":3:$f" > "$f.theirs" 2>/dev/null || cp "$f" "$f.theirs" # this cycle
+        cp "$f.ours" "$f"; grep -Fxv -f "$f.ours" "$f.theirs" >> "$f" || true
+        rm -f "$f.ours" "$f.theirs" ;;
+      *) git checkout --theirs -- "$f" 2>/dev/null || true ;;
+    esac
+    git add -f "$f"
+  done
+  GIT_EDITOR=true git rebase --continue
 }
 
 echo "loop: ${LOOP_MINUTES} min, camera model ${CAMERA_MODEL}"

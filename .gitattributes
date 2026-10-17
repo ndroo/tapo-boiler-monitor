@@ -1,0 +1,4 @@
+stills/readings.jsonl merge=union
+stills/ecobee.jsonl merge=union
+stills/weather.jsonl merge=union
+stills/alerts.jsonl merge=union
