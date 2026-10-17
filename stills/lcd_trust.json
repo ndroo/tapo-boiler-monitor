@@ -1,34 +1,34 @@
 {
  "fields": {
   "mode": {
-   "streak": 16,
-   "agree": 16,
+   "streak": 17,
+   "agree": 17,
    "disagree": 0
   },
   "flame_on": {
-   "streak": 16,
-   "agree": 16,
+   "streak": 17,
+   "agree": 17,
    "disagree": 0
   },
   "boiler_pump": {
-   "streak": 16,
-   "agree": 16,
+   "streak": 17,
+   "agree": 17,
    "disagree": 0
   },
   "ch_pump": {
-   "streak": 16,
-   "agree": 16,
+   "streak": 17,
+   "agree": 17,
    "disagree": 0
   },
   "temperature": {
-   "streak": 16,
-   "agree": 16,
+   "streak": 17,
+   "agree": 17,
    "disagree": 0
   }
  },
  "learned_icons": {},
- "cycles": 16,
- "model_calls": 16,
+ "cycles": 17,
+ "model_calls": 17,
  "disagreements": [
   {
    "ts": "2026-10-17T21:35:49+00:00",
@@ -50,7 +50,23 @@
      "verdict": "pixels"
     }
    }
+  },
+  {
+   "ts": "2026-10-17T22:21:25+00:00",
+   "image": "boiler_20261017_222114.jpg",
+   "fields": {
+    "flame_on": {
+     "pixels": true,
+     "model": false,
+     "verdict": "pixels"
+    },
+    "ch_pump": {
+     "pixels": true,
+     "model": false,
+     "verdict": "pixels"
+    }
+   }
   }
  ],
- "last_model_check_ts": 1792274768.1937807
+ "last_model_check_ts": 1792275678.448774
 }
