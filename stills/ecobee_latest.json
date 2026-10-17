@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-17T08:41:09.489303+00:00",
-  "local": "2026-10-17T08:41:09",
+  "timestamp": "2026-10-17T08:56:19.828174+00:00",
+  "local": "2026-10-17T08:56:19",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,9 +14,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 08:40:34",
+      "last_status": "2026-10-17 08:55:19",
       "hvac_mode": "heat",
-      "temp": 68.4,
+      "temp": 68.2,
       "humidity": 55,
       "set_heat": 68.0,
       "set_cool": 79.7,
@@ -29,7 +29,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 68.4,
+          "temp": 68.2,
           "occupied": false,
           "humidity": 55
         }
@@ -85,9 +85,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 08:39:29",
+      "last_status": "2026-10-17 08:55:44",
       "hvac_mode": "heat",
-      "temp": 71.6,
+      "temp": 71.7,
       "humidity": 48,
       "set_heat": 69.8,
       "set_cool": 82.4,
@@ -100,7 +100,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 71.6,
+          "temp": 71.7,
           "occupied": false,
           "humidity": 48
         }
@@ -118,7 +118,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-17 08:41:00",
+      "last_status": "2026-10-17 08:56:00",
       "hvac_mode": "auto",
       "temp": 68.5,
       "humidity": 59,
@@ -161,7 +161,7 @@
         {
           "name": "152 Strachan Ave",
           "type": "thermostat",
-          "temp": 69.1,
+          "temp": 68.9,
           "occupied": false,
           "humidity": 59
         },
@@ -186,9 +186,9 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-17 08:40:12",
+      "last_status": "2026-10-17 08:54:12",
       "hvac_mode": "off",
-      "temp": 65.1,
+      "temp": 65.0,
       "humidity": 48,
       "set_heat": 66.2,
       "set_cool": 66.2,
@@ -206,7 +206,7 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 65.1,
+          "temp": 65.0,
           "occupied": null,
           "humidity": 48
         }
@@ -224,7 +224,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-17 08:38:55",
+      "last_status": "2026-10-17 08:53:55",
       "hvac_mode": "off",
       "temp": 62.2,
       "humidity": 51,
