@@ -161,13 +161,13 @@
     </tr></thead><tbody id="tbody"></tbody></table></div>
   </div>
 
-  <div class="sub" style="text-align:center">Captured every 30 minutes by GitHub Actions · auto-refreshes every 5 min · <a href="legend.html">screen legend</a></div>
+  <div class="sub" style="text-align:center">Captured every 15 minutes by GitHub Actions · auto-refreshes every 5 min · <a href="legend.html">screen legend</a></div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
 const COL = { on:"#34c759", fire:"#ff7a1a", dhw:"#0a84ff", err:"#ff3b30" };
-const EXPECTED_MS = 1800e3;          // one reading every 30 minutes
+const EXPECTED_MS = 900e3;           // one reading every 15 minutes
 const GAP_MS = 1.6*EXPECTED_MS;      // longer than this between readings = a missed slot
 let ALL = [], WINDOW_H = 168;
 const ECO_MS = 900e3;                 // ecobee is polled every 15 minutes
@@ -557,7 +557,7 @@ function renderLive(){
   const cold = lastE ? lastE.t.filter(t=>health(t,lastE.ts)==="cold").map(t=>`${zoneName(THERMS.find(x=>x.id===t.id))||t.name} ${t.temp.toFixed(1)}° vs set ${t.set.toFixed(1)}°`) : [];
   if(probs.length){ b.className="banner bad"; b.textContent="⚠️ "+probs.join(" · "); }
   else if(cold.length){ b.className="banner warn"; b.textContent=`Below target (more than ${HEALTH_BAND_C} °C under set-point): `+cold.join(" · "); }
-  else if(ageH>1.25){ b.className="banner warn"; b.textContent=`⚠️ No new reading for ${ageH.toFixed(1)} h — the 30-minute job may not be running`; }
+  else if(ageH>0.75){ b.className="banner warn"; b.textContent=`⚠️ No new reading for ${ageH.toFixed(1)} h — the 15-minute job may not be running`; }
   else { const hs=lastE?lastE.t.map(t=>health(t,lastE.ts)):[]; const nOk=hs.filter(h=>h==="ok").length, nCatch=hs.filter(h=>h==="catching").length;
     b.className="banner ok"; b.textContent="✅ All normal"+(lastE?` · ${nOk} zone${nOk===1?'':'s'} on target${nCatch?`, ${nCatch} catching up after a set-point rise`:''}${hs.includes("offline")?' (offline sensors not counted)':''}`:""); }
 }

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # loop.sh - the body of the monitor-loop workflow. Runs for LOOP_MINUTES, polling ecobee
-# (and outdoor weather) every 15 minutes and the cameras every 30 minutes, committing results after each cycle.
+# (and outdoor weather) every 15 minutes and the cameras every 15 minutes, committing results after each cycle.
 # Safe to run locally too (needs the same env vars / .env as the two monitors).
 set -u
 LOOP_MINUTES="${LOOP_MINUTES:-330}"
 CAMERA_MODEL="${CAMERA_MODEL:-claude-sonnet-5-5}"
-ECO_EVERY=900; CAM_EVERY=1800
+ECO_EVERY=900; CAM_EVERY=900
 end=$(( $(date +%s) + LOOP_MINUTES*60 ))
 last_eco=0; last_cam=0
 

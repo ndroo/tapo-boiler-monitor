@@ -494,7 +494,7 @@ def needs_confirmation(r, prev=None):
 # ---------------------------------------------------------------------------------------
 PIXEL_FIELDS = ("mode", "flame_on", "boiler_pump", "ch_pump", "temperature")   # fan_on is pixel-read but not compared: the models misread it
 TRUST_FULL = 200          # agreements in a row before routine model checks stop for a field
-AUDIT_EVERY = 4           # trusted or not, ask the model every Nth cycle (4 x 30 min = 2 h)
+AUDIT_SECONDS = 2 * 3600  # trusted or not, ask the model at least this often
 TEMP_JUMP_F = 20          # a pixel temperature move bigger than this between cycles gets a model look
 PX_FIELD_MAP = {"flame_on": "flame", "fan_on": "fan", "boiler_pump": "boiler_pump", "ch_pump": "ch_pump",
                 "dhw_pump": "dhw_pump", "dhw_icon": "dhw_box", "sun_icon": "sun", "snowflake_icon": "snowflake",
@@ -555,7 +555,7 @@ def verify_reasons(px, cur, prev, trust):
         a, b = temp_f(cur.get("temperature")), temp_f(prev.get("temperature"))
         if a is not None and b is not None and abs(a - b) > TEMP_JUMP_F:
             reasons.append(f"temperature jump {b:.0f}->{a:.0f} F")
-    if trust["cycles"] % AUDIT_EVERY == 0:
+    if time.time() - (trust.get("last_model_check_ts") or 0) >= AUDIT_SECONDS:
         reasons.append("periodic audit")
     return reasons
 
@@ -593,7 +593,7 @@ def read_boiler(client, model, confirm_model, out, p, lcd_crop, lcd_score, imgs_
                               "error code such as E04 / Er:76 in place of the temperature, a service wrench, a blank "
                               "or partial display - is showing in the current frame.")
     m, u = analyze(client, model, prompt, imgs, BOILER_SCHEMA)
-    trust["model_calls"] += 1
+    trust["model_calls"] += 1; trust["last_model_check_ts"] = time.time()
     for k in ("input", "output", "cache_read"):
         usage[k] += u.get(k) or 0
     usage["model"] = model
