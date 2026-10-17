@@ -161,7 +161,7 @@
     </tr></thead><tbody id="tbody"></tbody></table></div>
   </div>
 
-  <div class="sub" style="text-align:center">Captured every 15 minutes by GitHub Actions · auto-refreshes every 5 min · <a href="legend.html">screen legend</a></div>
+  <div class="sub" style="text-align:center">Captured every 15 minutes by GitHub Actions · screen read from pixels, model consulted as a check · auto-refreshes every 5 min · <a href="legend.html">screen legend</a></div>
 </div>
 
 <script>
@@ -192,6 +192,19 @@ const WX_DESC = {0:"clear",1:"mostly clear",2:"partly cloudy",3:"overcast",45:"f
 const ECO_SITE = /beatrice/i;         // only thermostats at this address belong to the boiler system
 // Everything logged is in °F (ecobee API, boiler LCD); the dashboard shows °C throughout.
 const F2C = f => (f==null||isNaN(f)) ? null : Math.round((Number(f)-32)*50/9)/10;
+// List prices, USD per million tokens (input, output), Oct 2026.
+const PRICE = {"claude-sonnet-5-5":[2,10], "claude-opus-5-5":[4,20], "claude-haiku-5-5":[0.1,0.5], "claude-sonnet-5":[2,10], "claude-opus-5":[5,25]};
+function usageCost(u){ if(!u||!u.model) return 0;
+  const calls = u.calls && u.calls.length ? u.calls : [{model:u.model, input:u.input||0, output:u.output||0}];
+  return calls.reduce((a,c)=>{ const p=PRICE[c.model]||PRICE["claude-sonnet-5-5"]; return a+((c.input||0)*p[0]+(c.output||0)*p[1])/1e6; },0); }
+function runRate(){ // spend over the trailing 24 h, projected
+  const now=Date.now(), rows=ALL.filter(r=>r.ts>now-24*3600e3); if(!rows.length) return null;
+  const hours=Math.max(0.5, Math.min(24,(now-rows[0].ts)/3600e3));
+  const spend=rows.reduce((a,r)=>a+(r.cost||0),0), perDay=spend/hours*24;
+  const byModel={}; rows.forEach(r=>(r.calls||[]).forEach(c=>{ byModel[c.model]=(byModel[c.model]||0)+1; }));
+  const pixelOnly=rows.filter(r=>r.pixelsOnly).length, modelCalls=rows.filter(r=>r.model).length;
+  return {hours, spend, perDay, perMonth:perDay*30.4, byModel, pixelOnly, modelCalls, n:rows.length};
+}
 // Health rule: 21 °C is the reference temperature. A zone is "below target" only when the room
 // is BELOW 21 °C AND more than 2 °C below its set-point. A set-point below 21 is fine, and a room at 23.5 with
 // someone asking for 26 is fine. After a set-point rise the system gets 6 h to catch up.
@@ -262,6 +275,8 @@ function parseLine(o){
     power:tri(z.power), z1:tri(z.zone1), z2:tri(z.zone2), z3:tri(z.zone3), z4:tri(z.zone4),
     zmethod:z.method||(("power" in z)?"claude":null), znotes:z.notes||"", zwhy:z.why_llm||"", zpx:Z.pixels||null,
     tokens:(bu.input||0)+(bu.output||0)+(zu.input||0)+(zu.output||0), model:bu.model||zu.model||"",
+    cost:usageCost(bu)+usageCost(zu), calls:(bu.calls||(bu.model?[{model:bu.model}]:[])).concat(zu.model?[{model:zu.model}]:[]),
+    verified:(b.source&&b.source.verified_by)||null, pixelsOnly:!!(b.source&&!b.source.verified_by), trust:B.trust||null,
     confirm:(b.first_pass&&bu.confirm_model)?bu.confirm_model:"", firstPass:b.first_pass||null, zmodel:zu.model||"",
     berr:B._error||b._error||null, zerr:Z._error||z._error||null,
     alert:o.alert||null, raw:o,
@@ -584,9 +599,10 @@ function renderEcoCards(){
     </div>`; }).join("");
 }
 
+const TRUST_FULL = 200;   // must match monitor.py
 function renderStats(rows){
   if(!rows.length){ $("stats").innerHTML=""; return; }
-  const last=rows[rows.length-1];
+  const last=rows[rows.length-1]; const RR=runRate();
   const spanH=Math.max(1,(last.ts-rows[0].ts)/3600e3);
   const expected=Math.round(spanH*3600e3/EXPECTED_MS)+1, got=rows.length, cov=Math.min(100,Math.round(100*got/expected));
   const tok=rows.reduce((a,r)=>a+(r.tokens||0),0);
@@ -595,10 +611,15 @@ function renderStats(rows){
   const S=(k,v,s)=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s||""}</div></div>`;
   $("stats").innerHTML =
     S("Last reading", fmt(last.ts,true), ((Date.now()-last.ts)/3600e3).toFixed(1)+" h ago") +
-    S("Coverage", cov+"%", `${got} of ~${expected} half-hourly readings`) +
+    S("Coverage", cov+"%", `${got} of ~${expected} readings at one per ${Math.round(EXPECTED_MS/60e3)} min`) +
     S("Temp range", temps.length?`${Math.min(...temps).toFixed(1)}–${Math.max(...temps).toFixed(1)}°C`:"—", "in window") +
     S("Burner firing", `${fire}/${got}`, `heat call ${heat} · DHW call ${dhw}`) +
-    S("API tokens", tok.toLocaleString(), "in window · latest read by "+shortModel(last.model)) +
+    (RR ? S("Run rate", `$${RR.perDay.toFixed(2)}/day → $${RR.perMonth.toFixed(0)}/mo`,
+             `last ${RR.hours.toFixed(1)} h: $${RR.spend.toFixed(2)} on ${RR.modelCalls} model check${RR.modelCalls===1?'':'s'} (${Object.entries(RR.byModel).map(([m,n])=>shortModel(m)+' '+n).join(', ')||'none'}) · ${RR.pixelOnly} of ${RR.n} cycles pixels-only`)
+        : S("Run rate", "—", "no readings in the last 24 h")) +
+    (last.trust ? S("Pixel trust", `${Math.min(...Object.values(last.trust.streaks||{0:0}))} / ${TRUST_FULL}`,
+             `agreements in a row before routine model checks stop · ${last.trust.learned_icons&&last.trust.learned_icons.length?'learned icons: '+last.trust.learned_icons.join(', '):'no new icons learned yet'}`)
+        : S("API tokens", tok.toLocaleString(), "in window · latest read by "+shortModel(last.model))) +
     (WXL&&WXL.temp_c!=null ? S("Outdoor now", `${Number(WXL.temp_c).toFixed(1)}°C`, `feels ${WXL.apparent_c!=null?Number(WXL.apparent_c).toFixed(1)+'°':'—'} · ${WXL.humidity??'—'}% RH · wind ${WXL.wind_kmh??'—'} km/h${WX_DESC[WXL.weather_code]?' · '+WX_DESC[WXL.weather_code]:''}`) : "");
 }
 

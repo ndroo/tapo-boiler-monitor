@@ -597,6 +597,7 @@ def read_boiler(client, model, confirm_model, out, p, lcd_crop, lcd_score, imgs_
     for k in ("input", "output", "cache_read"):
         usage[k] += u.get(k) or 0
     usage["model"] = model
+    usage["calls"] = [{"model": model, "input": u.get("input") or 0, "output": u.get("output") or 0, "role": "verify"}]
     if not isinstance(m, dict) or m.get("_error"):
         cur["notes"] = "model check failed (" + str((m or {}).get("_error")) + "); pixels unverified: " + "; ".join(reasons)
         cur["confidence"] = "medium" if px.get("ok") else "low"
@@ -656,6 +657,7 @@ def read_boiler(client, model, confirm_model, out, p, lcd_crop, lcd_score, imgs_
         for k in ("input", "output", "cache_read"):
             usage[k] += u2.get(k) or 0
         usage["confirm_model"] = confirm_model
+        usage["calls"].append({"model": confirm_model, "input": u2.get("input") or 0, "output": u2.get("output") or 0, "role": "arbiter"})
         if isinstance(arb, dict) and not arb.get("_error"):
             arb["mode"] = derive_mode(arb)
             px_vals = px_as_reading(px)
@@ -756,6 +758,8 @@ def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAU
             for k in ("input", "output", "cache_read"):
                 usage[k] = (usage.get(k) or 0) + (u2.get(k) or 0)
             usage["confirm_model"] = confirm_model
+            usage.setdefault("calls", [{"model": model, "input": (usage.get("input") or 0) - (u2.get("input") or 0), "output": (usage.get("output") or 0) - (u2.get("output") or 0), "role": "read"}])
+            usage["calls"].append({"model": confirm_model, "input": u2.get("input") or 0, "output": u2.get("output") or 0, "role": "confirm"})
         if isinstance(reading, dict) and not reading.get("_error"):
             reading["pump_on"] = bool(reading.get("boiler_pump") or reading.get("ch_pump") or reading.get("dhw_pump"))
             reading["mode"] = derive_mode(reading)
