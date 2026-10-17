@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-17T06:11:51.866184+00:00",
-  "local": "2026-10-17T06:11:51",
+  "timestamp": "2026-10-17T06:42:04.164430+00:00",
+  "local": "2026-10-17T06:42:04",
   "boiler": {
-    "image": "boiler_20261017_061207.jpg",
+    "image": "boiler_20261017_064219.jpg",
     "reading": {
-      "temperature": "116\u00b0F",
-      "time_text": "3:37",
+      "temperature": "118\u00b0F",
+      "time_text": "4:07",
       "day_text": "MON",
       "flame_on": false,
       "fan_on": false,
@@ -15,29 +15,29 @@
       "ch_pump": false,
       "dhw_pump": false,
       "sun_icon": false,
-      "house_icon": false,
+      "house_icon": true,
       "snowflake_icon": false,
       "info_icon": false,
       "wrench_icon": false,
-      "comm_icon": false,
+      "comm_icon": true,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "3:37 MON 116 \u00b0F",
+      "display_text": "4:07 MON 118 F",
       "legible": true,
       "confidence": "medium",
-      "notes": "Image is blurry; the time reads approximately 3:37 with no AM/PM visible, and the only clearly dark segments are the time, day, and temperature digits, while the faint icons appear to be ghost outlines.",
+      "notes": "Image is blurry; house and comm icons appear dark at top, AM/PM indicator unclear, and other icons not clearly visible.",
       "pump_on": false,
       "mode": "idle"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3261,
-      "output": 271,
+      "output": 244,
       "cache_read": 0
     }
   },
   "zone": {
-    "image": "zone_20261017_061226.jpg",
+    "image": "zone_20261017_064238.jpg",
     "pixels": {
       "power": {
         "white": 0.904,
@@ -45,11 +45,11 @@
       },
       "zone1": {
         "white": 0.0,
-        "mean": 87
+        "mean": 88
       },
       "zone2": {
         "white": 0.0,
-        "mean": 57
+        "mean": 56
       },
       "zone3": {
         "white": 0.0,
