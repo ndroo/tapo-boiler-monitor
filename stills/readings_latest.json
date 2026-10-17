@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-10-17T15:42:59.269778+00:00",
-  "local": "2026-10-17T15:42:59",
+  "timestamp": "2026-10-17T16:13:12.945923+00:00",
+  "local": "2026-10-17T16:13:12",
   "boiler": {
-    "image": "boiler_20261017_154315.jpg",
+    "image": "boiler_20261017_161329.jpg",
     "reading": {
-      "temperature": "108\u00b0F",
-      "time_text": "1:08 AM",
+      "temperature": "10",
+      "time_text": "7:38 AM",
       "day_text": "TUE",
       "flame_on": false,
       "fan_on": false,
@@ -22,18 +22,19 @@
       "comm_icon": false,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "AM 1:08 TUE 108 \u00b0F",
+      "display_text": "AM 7:38 TUE 10 (house icon at top)",
       "legible": true,
-      "confidence": "medium",
-      "notes": "Zoom shows only the left part of the LCD; the right-side icons were judged from the context frame, where none look solidly dark, and the house icon may be flashing.",
+      "confidence": "low",
+      "notes": "Zoom crops off the right side of the LCD; the full frame suggests the temperature reads 106\u00b0F, and the right-side icons are not visible in the zoom.",
       "pump_on": false,
       "mode": "idle"
     },
     "usage": {
       "model": "claude-sonnet-5-5",
-      "input": 3261,
-      "output": 261,
-      "cache_read": 0
+      "input": 6522,
+      "output": 1287,
+      "cache_read": 0,
+      "confirm_model": "claude-opus-5-5"
     },
     "lcd": {
       "crop": [
@@ -46,27 +47,27 @@
     }
   },
   "zone": {
-    "image": "zone_20261017_154334.jpg",
+    "image": "zone_20261017_161401.jpg",
     "pixels": {
       "power": {
-        "white": 0.807,
-        "mean": 229
+        "white": 0.822,
+        "mean": 230
       },
       "zone1": {
         "white": 0.0,
-        "mean": 90
+        "mean": 91
       },
       "zone2": {
         "white": 0.0,
-        "mean": 52
+        "mean": 54
       },
       "zone3": {
         "white": 0.0,
-        "mean": 50
+        "mean": 49
       },
       "zone4": {
         "white": 0.0,
-        "mean": 46
+        "mean": 47
       }
     },
     "reading": {
@@ -76,7 +77,7 @@
       "zone3": false,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.81, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.82, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
