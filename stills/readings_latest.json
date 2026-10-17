@@ -1,14 +1,14 @@
 {
-  "timestamp": "2026-10-17T23:06:50.395373+00:00",
-  "local": "2026-10-17T23:06:50",
+  "timestamp": "2026-10-17T23:21:59.269408+00:00",
+  "local": "2026-10-17T23:21:59",
   "boiler": {
-    "image": "boiler_20261017_230706.jpg",
+    "image": "boiler_20261017_232214.jpg",
     "reading": {
       "flame_on": true,
       "fan_on": true,
-      "boiler_pump": true,
-      "ch_pump": true,
-      "dhw_pump": false,
+      "boiler_pump": false,
+      "ch_pump": false,
+      "dhw_pump": true,
       "dhw_icon": false,
       "sun_icon": false,
       "snowflake_icon": false,
@@ -16,14 +16,14 @@
       "wrench_icon": false,
       "house_icon": true,
       "comm_icon": true,
-      "temperature": "118\u00b0F",
+      "temperature": "130\u00b0F",
       "ch_icon": true,
       "error_codes": [],
-      "display_text": "AM 8:32 TUE 118 F",
-      "time_text": "8:32 AM",
+      "display_text": "AM 8:47 TUE 130 F",
+      "time_text": "8:47 AM",
       "day_text": "TUE",
       "cascade_text": null,
-      "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements))",
+      "notes": "pixels + claude-sonnet-5-5 (unconfirmed icon lit: dhw_box; building trust (5 field(s) under 200 agreements); state change: mode, boiler_pump, ch_pump) | dhw_box: pixels lit but claude-sonnet-5-5 says off (reported off; box still unconfirmed) | dhw_pump: both models say lit but the pixel box (score 15.6) does not - box likely misplaced, needs recalibration | disagreement on flame_on (arbiter: pixels), boiler_pump (arbiter: pixels), ch_pump (arbiter: pixels)",
       "legible": true,
       "confidence": "high",
       "pump_on": true,
@@ -43,25 +43,42 @@
           "day_text"
         ],
         "reasons": [
-          "building trust (5 field(s) under 200 agreements)"
+          "unconfirmed icon lit: dhw_box",
+          "building trust (5 field(s) under 200 agreements)",
+          "state change: mode, boiler_pump, ch_pump"
         ],
         "verified_by": "claude-sonnet-5-5",
-        "arbiter": null
+        "arbiter": {
+          "model": "claude-opus-5-5",
+          "verdict": {
+            "flame_on": "pixels",
+            "boiler_pump": "pixels",
+            "ch_pump": "pixels",
+            "dhw_pump": "model"
+          }
+        }
       }
     },
     "usage": {
       "model": "claude-sonnet-5-5",
-      "input": 3797,
-      "output": 253,
+      "input": 7594,
+      "output": 978,
       "cache_read": 0,
       "calls": [
         {
           "model": "claude-sonnet-5-5",
           "input": 3797,
-          "output": 253,
+          "output": 274,
           "role": "verify"
+        },
+        {
+          "model": "claude-opus-5-5",
+          "input": 3797,
+          "output": 704,
+          "role": "arbiter"
         }
-      ]
+      ],
+      "confirm_model": "claude-opus-5-5"
     },
     "lcd": {
       "crop": [
@@ -70,37 +87,37 @@
         841,
         324
       ],
-      "match": 0.941
+      "match": 0.956
     },
     "pixels": {
       "ok": true,
-      "mode": "heating",
+      "mode": "dhw",
       "flame": true,
       "fan": true,
-      "boiler_pump": true,
-      "ch_pump": true,
-      "dhw_box": false,
+      "boiler_pump": false,
+      "ch_pump": false,
+      "dhw_box": true,
       "dhw_pump": false,
-      "temperature_f": 118,
+      "temperature_f": 130,
       "register": {
-        "ncc": 0.738,
+        "ncc": 0.7,
         "dx": 0,
         "dy": -1
       },
       "scores": {
-        "radiator": 54.5,
-        "flame": 36.8,
-        "fan": 39.5,
-        "boiler_pump": 46.0,
-        "ch_pump": 50.2,
-        "house": 33.6,
-        "comm": 22.2,
-        "sun": 14.5,
-        "snowflake": 10.4,
-        "dhw_box": 5.7,
-        "info": 5.6,
-        "wrench": 7.5,
-        "dhw_pump": 1.9
+        "radiator": 55.4,
+        "flame": 37.6,
+        "fan": 42.7,
+        "boiler_pump": 16.0,
+        "ch_pump": 27.9,
+        "house": 34.9,
+        "comm": 22.3,
+        "sun": 13.5,
+        "snowflake": 12.4,
+        "dhw_box": 26.1,
+        "info": 6.0,
+        "wrench": 8.4,
+        "dhw_pump": 15.6
       },
       "provisional": [
         "sun",
@@ -112,20 +129,20 @@
       ]
     },
     "trust": {
-      "cycles": 20,
-      "model_calls": 20,
+      "cycles": 21,
+      "model_calls": 21,
       "streaks": {
-        "mode": 20,
-        "flame_on": 20,
-        "boiler_pump": 20,
-        "ch_pump": 20,
-        "temperature": 20
+        "mode": 21,
+        "flame_on": 21,
+        "boiler_pump": 21,
+        "ch_pump": 21,
+        "temperature": 21
       },
       "learned_icons": []
     }
   },
   "zone": {
-    "image": "zone_20261017_230725.jpg",
+    "image": "zone_20261017_232244.jpg",
     "pixels": {
       "power": {
         "white": 0.858,
@@ -136,11 +153,11 @@
         "mean": 87
       },
       "zone2": {
-        "white": 0.198,
-        "mean": 143
+        "white": 0.193,
+        "mean": 142
       },
       "zone3": {
-        "white": 0.766,
+        "white": 0.772,
         "mean": 219
       },
       "zone4": {
@@ -155,7 +172,7 @@
       "zone3": true,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.86, zone1 0.00, zone2 0.20, zone3 0.77, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.86, zone1 0.00, zone2 0.19, zone3 0.77, zone4 0.00"
     }
   },
   "alert": {
