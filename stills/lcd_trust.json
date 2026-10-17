@@ -1,0 +1,33 @@
+{
+ "fields": {
+  "mode": {
+   "streak": 1,
+   "agree": 1,
+   "disagree": 0
+  },
+  "flame_on": {
+   "streak": 1,
+   "agree": 1,
+   "disagree": 0
+  },
+  "boiler_pump": {
+   "streak": 1,
+   "agree": 1,
+   "disagree": 0
+  },
+  "ch_pump": {
+   "streak": 1,
+   "agree": 1,
+   "disagree": 0
+  },
+  "temperature": {
+   "streak": 1,
+   "agree": 1,
+   "disagree": 0
+  }
+ },
+ "learned_icons": {},
+ "cycles": 1,
+ "model_calls": 1,
+ "disagreements": []
+}

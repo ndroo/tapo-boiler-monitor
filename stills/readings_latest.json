@@ -1,51 +1,59 @@
 {
-  "timestamp": "2026-10-17T16:13:12.945923+00:00",
-  "local": "2026-10-17T16:13:12",
+  "timestamp": "2026-10-17T18:18:11.562012+00:00",
+  "local": "2026-10-17T18:18:11",
   "boiler": {
-    "image": "boiler_20261017_161329.jpg",
+    "image": "boiler_20261017_181827.jpg",
     "reading": {
-      "temperature": "106\u00b0F",
-      "time_text": "7:38 AM",
-      "day_text": "TUE",
       "flame_on": false,
       "fan_on": false,
-      "ch_icon": false,
-      "dhw_icon": false,
       "boiler_pump": false,
       "ch_pump": false,
       "dhw_pump": false,
+      "dhw_icon": false,
       "sun_icon": false,
-      "house_icon": true,
       "snowflake_icon": false,
       "info_icon": false,
       "wrench_icon": false,
-      "comm_icon": false,
-      "cascade_text": null,
+      "house_icon": true,
+      "comm_icon": true,
+      "temperature": "97\u00b0F",
+      "ch_icon": false,
       "error_codes": [],
-      "display_text": "AM 7:38 TUE 106 \u00b0F",
+      "display_text": "AM 3:43 TUE 97\u00b0 house icon, comm icon",
+      "time_text": "3:43",
+      "day_text": "TUE",
+      "cascade_text": null,
+      "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements))",
       "legible": true,
-      "confidence": "medium",
-      "notes": "Image is blurry; the house icon appears lit at the top and a faint mark at top right may be the comm icon ghost, so it is treated as off.",
+      "confidence": "high",
       "pump_on": false,
       "mode": "idle",
-      "corrected": {
-        "when": "2026-10-17T16:31:35+00:00",
-        "model": "claude-sonnet-5-5",
-        "reason": "CI job lacked numpy so the LCD crop fell back to the pre-move position; re-read with the located crop",
-        "was": {
-          "temperature": "10",
-          "mode": "idle",
-          "flame_on": false,
-          "confidence": "low"
-        }
+      "source": {
+        "pixels": [
+          "mode",
+          "flame_on",
+          "boiler_pump",
+          "ch_pump",
+          "temperature"
+        ],
+        "model": [
+          "error_codes",
+          "display_text",
+          "time_text",
+          "day_text"
+        ],
+        "reasons": [
+          "building trust (5 field(s) under 200 agreements)"
+        ],
+        "verified_by": "claude-sonnet-5-5",
+        "arbiter": null
       }
     },
     "usage": {
       "model": "claude-sonnet-5-5",
-      "input": 6522,
-      "output": 1287,
-      "cache_read": 0,
-      "confirm_model": "claude-opus-5-5"
+      "input": 3797,
+      "output": 264,
+      "cache_read": 0
     },
     "lcd": {
       "crop": [
@@ -54,19 +62,70 @@
         842,
         324
       ],
-      "match": 0.965
+      "match": 0.936
+    },
+    "pixels": {
+      "ok": true,
+      "mode": "idle",
+      "flame": false,
+      "fan": false,
+      "boiler_pump": false,
+      "ch_pump": false,
+      "dhw_box": false,
+      "dhw_pump": false,
+      "temperature_f": 97,
+      "register": {
+        "ncc": 0.755,
+        "dx": 1,
+        "dy": -1
+      },
+      "scores": {
+        "radiator": 25.1,
+        "flame": 17.1,
+        "fan": 18.0,
+        "boiler_pump": 12.6,
+        "ch_pump": 25.1,
+        "house": 33.3,
+        "comm": 21.4,
+        "sun": 12.9,
+        "snowflake": 9.4,
+        "dhw_box": 4.0,
+        "info": 4.4,
+        "wrench": 6.6,
+        "dhw_pump": 0.2
+      },
+      "provisional": [
+        "sun",
+        "snowflake",
+        "dhw_box",
+        "info",
+        "wrench",
+        "dhw_pump"
+      ]
+    },
+    "trust": {
+      "cycles": 1,
+      "model_calls": 1,
+      "streaks": {
+        "mode": 1,
+        "flame_on": 1,
+        "boiler_pump": 1,
+        "ch_pump": 1,
+        "temperature": 1
+      },
+      "learned_icons": []
     }
   },
   "zone": {
-    "image": "zone_20261017_161401.jpg",
+    "image": "zone_20261017_181847.jpg",
     "pixels": {
       "power": {
-        "white": 0.822,
-        "mean": 230
+        "white": 0.843,
+        "mean": 235
       },
       "zone1": {
         "white": 0.0,
-        "mean": 91
+        "mean": 90
       },
       "zone2": {
         "white": 0.0,
@@ -74,7 +133,7 @@
       },
       "zone3": {
         "white": 0.0,
-        "mean": 49
+        "mean": 50
       },
       "zone4": {
         "white": 0.0,
@@ -88,7 +147,7 @@
       "zone3": false,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.82, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.84, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
