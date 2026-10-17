@@ -4,7 +4,7 @@
   "boiler": {
     "image": "boiler_20261017_161329.jpg",
     "reading": {
-      "temperature": "10",
+      "temperature": "106\u00b0F",
       "time_text": "7:38 AM",
       "day_text": "TUE",
       "flame_on": false,
@@ -22,12 +22,23 @@
       "comm_icon": false,
       "cascade_text": null,
       "error_codes": [],
-      "display_text": "AM 7:38 TUE 10 (house icon at top)",
+      "display_text": "AM 7:38 TUE 106 \u00b0F",
       "legible": true,
-      "confidence": "low",
-      "notes": "Zoom crops off the right side of the LCD; the full frame suggests the temperature reads 106\u00b0F, and the right-side icons are not visible in the zoom.",
+      "confidence": "medium",
+      "notes": "Image is blurry; the house icon appears lit at the top and a faint mark at top right may be the comm icon ghost, so it is treated as off.",
       "pump_on": false,
-      "mode": "idle"
+      "mode": "idle",
+      "corrected": {
+        "when": "2026-10-17T16:31:35+00:00",
+        "model": "claude-sonnet-5-5",
+        "reason": "CI job lacked numpy so the LCD crop fell back to the pre-move position; re-read with the located crop",
+        "was": {
+          "temperature": "10",
+          "mode": "idle",
+          "flame_on": false,
+          "confidence": "low"
+        }
+      }
     },
     "usage": {
       "model": "claude-sonnet-5-5",
@@ -38,12 +49,12 @@
     },
     "lcd": {
       "crop": [
-        88,
+        329,
         172,
-        545,
-        300
+        842,
+        324
       ],
-      "match": null
+      "match": 0.965
     }
   },
   "zone": {

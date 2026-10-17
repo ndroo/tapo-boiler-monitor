@@ -186,7 +186,10 @@ def _ncc_search(frame, tmpl, scale, centre=None, radius=0):
     return best
 
 
-def locate_lcd(path):
+def _lcd_state_path(out): return os.path.join(out, "lcd_state.json")
+
+
+def locate_lcd(path, out=None):
     """Find the P-950EH LCD in a boiler frame. Coarse NCC search over the whole frame at
     1/8 scale, then refine at full resolution. Returns (crop_box, score); the crop is the
     template's size at the best match, or BOILER_DISPLAY_CROP if the match is weak or the
@@ -208,12 +211,31 @@ def locate_lcd(path):
         crop = (max(0, x - px), max(0, y - py),
                 min(frame.width, x + tmpl.width + px), min(frame.height, y + tmpl.height + py))
         if score < LCD_MATCH_MIN:
-            log(f"boiler: LCD match weak ({score:.2f} at {crop[:2]}), using fixed crop")
-            return BOILER_DISPLAY_CROP, score
+            log(f"boiler: LCD match weak ({score:.2f} at {crop[:2]}), using last good crop")
+            return _last_good_crop(out), score
+        if out:
+            try:
+                json.dump({"crop": list(crop), "match": round(score, 3), "path": os.path.basename(path)},
+                          open(_lcd_state_path(out), "w"))
+            except Exception:
+                pass
         return crop, score
     except Exception as e:
-        log("boiler: LCD locate failed, using fixed crop:", e)
-        return BOILER_DISPLAY_CROP, None
+        log("boiler: LCD locate failed, using last good crop:", e)
+        return _last_good_crop(out), None
+
+
+def _last_good_crop(out):
+    """The crop from the last successful locate (survives a camera nudge even when numpy or
+    the templates are missing); the original fixed crop only if there has never been one."""
+    try:
+        if out:
+            c = json.load(open(_lcd_state_path(out)))["crop"]
+            if len(c) == 4:
+                return tuple(int(v) for v in c)
+    except Exception:
+        pass
+    return BOILER_DISPLAY_CROP
 
 
 def b64_file(path):
@@ -306,6 +328,16 @@ def send_sms(body):
     except Exception as e:
         log("SMS error:", e)
         return {"status": "failed", "error": str(e)[:200], "message": body}
+
+
+TEMP_MIN_F, TEMP_MAX_F = 40, 230   # plausible P-950EH supply-temperature display range
+
+
+def temp_f(t):
+    """Numeric degrees from the model's temperature string ('113°F', '73 F'), else None."""
+    import re
+    m = re.search(r"-?\d+", str(t or ""))
+    return float(m.group()) if m else None
 
 
 def derive_mode(r):
@@ -457,7 +489,7 @@ def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAU
         imgs = []
         if os.path.exists(LEGEND_IMAGE):
             imgs.append(b64_file(LEGEND_IMAGE))
-        lcd_crop, lcd_score = locate_lcd(p)
+        lcd_crop, lcd_score = locate_lcd(p, out)
         imgs += [b64_image(p, width=FULL_FRAME_WIDTH), b64_image(p, crop=lcd_crop, zoom=3)]
         reading, usage = analyze(client, model, BOILER_PROMPT, imgs, BOILER_SCHEMA)
         why = needs_confirmation(reading, previous_boiler_reading(out)) if confirm_model else ""
@@ -476,6 +508,13 @@ def cycle(client, model, out, zone_llm="auto", confirm_model=CONFIRM_MODEL_DEFAU
         if isinstance(reading, dict) and not reading.get("_error"):
             reading["pump_on"] = bool(reading.get("boiler_pump") or reading.get("ch_pump") or reading.get("dhw_pump"))
             reading["mode"] = derive_mode(reading)
+            t = temp_f(reading.get("temperature"))
+            if t is not None and not (TEMP_MIN_F <= t <= TEMP_MAX_F):
+                # A clipped or misread digit (e.g. "10" for 106) - keep the text, drop the number.
+                log(f"boiler: temperature {reading.get('temperature')!r} outside {TEMP_MIN_F}-{TEMP_MAX_F} F -> suspect")
+                reading["temperature_suspect"] = reading.get("temperature")
+                reading["temperature"] = None
+                reading["confidence"] = "low"
         result["boiler"] = {"image": os.path.basename(p), "reading": reading, "usage": usage,
                             "lcd": {"crop": list(lcd_crop), "match": None if lcd_score is None else round(lcd_score, 3)}}
         log("boiler:", json.dumps(reading))
