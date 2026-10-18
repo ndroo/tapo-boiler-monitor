@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-18T12:22:03.844769+00:00",
-  "local": "2026-10-18T12:22:03",
+  "timestamp": "2026-10-18T12:37:26.947185+00:00",
+  "local": "2026-10-18T12:37:26",
   "boiler": {
-    "image": "boiler_20261018_122220.jpg",
+    "image": "boiler_20261018_123742.jpg",
     "reading": {
       "flame_on": true,
       "fan_on": true,
@@ -16,14 +16,14 @@
       "wrench_icon": false,
       "house_icon": true,
       "comm_icon": true,
-      "temperature": "130\u00b0F",
+      "temperature": "118\u00b0F",
       "ch_icon": true,
       "error_codes": [],
-      "display_text": "9:40 TUE 130 F P-950EH",
-      "time_text": "9:40 PM",
+      "display_text": "10:02 TUE 118 F",
+      "time_text": "10:02",
       "day_text": "TUE",
       "cascade_text": null,
-      "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements); state change: flame_on) | disagreement on flame_on (arbiter: pixels)",
+      "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements)) | disagreement on flame_on (arbiter: pixels)",
       "legible": true,
       "confidence": "high",
       "pump_on": true,
@@ -43,8 +43,7 @@
           "day_text"
         ],
         "reasons": [
-          "building trust (5 field(s) under 200 agreements)",
-          "state change: flame_on"
+          "building trust (5 field(s) under 200 agreements)"
         ],
         "verified_by": "claude-sonnet-5-5",
         "arbiter": {
@@ -58,19 +57,19 @@
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 7594,
-      "output": 1018,
+      "output": 941,
       "cache_read": 0,
       "calls": [
         {
           "model": "claude-sonnet-5-5",
           "input": 3797,
-          "output": 261,
+          "output": 256,
           "role": "verify"
         },
         {
           "model": "claude-opus-5-5",
           "input": 3797,
-          "output": 757,
+          "output": 685,
           "role": "arbiter"
         }
       ],
@@ -79,11 +78,11 @@
     "lcd": {
       "crop": [
         328,
-        171,
+        172,
         841,
-        323
+        324
       ],
-      "match": 0.899
+      "match": 0.905
     },
     "pixels": {
       "ok": true,
@@ -94,26 +93,26 @@
       "ch_pump": true,
       "dhw_box": false,
       "dhw_pump": false,
-      "temperature_f": 130,
+      "temperature_f": 118,
       "register": {
-        "ncc": 0.728,
+        "ncc": 0.723,
         "dx": 0,
-        "dy": 0
+        "dy": -1
       },
       "scores": {
-        "radiator": 49.8,
+        "radiator": 49.6,
         "flame": 32.2,
-        "fan": 34.0,
-        "boiler_pump": 42.0,
-        "ch_pump": 47.1,
-        "house": 29.3,
-        "comm": 19.6,
-        "sun": 14.1,
-        "snowflake": 5.5,
-        "dhw_box": 1.1,
-        "info": 0.4,
-        "wrench": 2.5,
-        "dhw_pump": -3.1
+        "fan": 34.7,
+        "boiler_pump": 42.1,
+        "ch_pump": 49.3,
+        "house": 29.1,
+        "comm": 16.8,
+        "sun": 6.1,
+        "snowflake": 5.2,
+        "dhw_box": 0.7,
+        "info": -0.3,
+        "wrench": 1.5,
+        "dhw_pump": -4.0
       },
       "provisional": [
         "sun",
@@ -125,40 +124,40 @@
       ]
     },
     "trust": {
-      "cycles": 73,
-      "model_calls": 73,
+      "cycles": 74,
+      "model_calls": 74,
       "streaks": {
-        "mode": 73,
-        "flame_on": 73,
-        "boiler_pump": 73,
-        "ch_pump": 73,
-        "temperature": 73
+        "mode": 74,
+        "flame_on": 74,
+        "boiler_pump": 74,
+        "ch_pump": 74,
+        "temperature": 74
       },
       "learned_icons": []
     }
   },
   "zone": {
-    "image": "zone_20261018_122252.jpg",
+    "image": "zone_20261018_123815.jpg",
     "pixels": {
       "power": {
-        "white": 0.736,
-        "mean": 212
+        "white": 0.726,
+        "mean": 211
       },
       "zone1": {
         "white": 0.0,
-        "mean": 89
+        "mean": 88
       },
       "zone2": {
-        "white": 0.168,
-        "mean": 137
+        "white": 0.218,
+        "mean": 136
       },
       "zone3": {
         "white": 0.711,
-        "mean": 209
+        "mean": 207
       },
       "zone4": {
         "white": 0.0,
-        "mean": 97
+        "mean": 96
       }
     },
     "reading": {
@@ -168,7 +167,7 @@
       "zone3": true,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.74, zone1 0.00, zone2 0.17, zone3 0.71, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.73, zone1 0.00, zone2 0.22, zone3 0.71, zone4 0.00"
     }
   },
   "alert": {
