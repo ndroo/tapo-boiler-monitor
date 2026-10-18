@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-18T11:21:10.418346+00:00",
-  "local": "2026-10-18T11:21:10",
+  "timestamp": "2026-10-18T11:36:22.974286+00:00",
+  "local": "2026-10-18T11:36:22",
   "boiler": {
-    "image": "boiler_20261018_112126.jpg",
+    "image": "boiler_20261018_113638.jpg",
     "reading": {
       "flame_on": true,
       "fan_on": true,
@@ -19,11 +19,11 @@
       "temperature": "119\u00b0F",
       "ch_icon": true,
       "error_codes": [],
-      "display_text": "8:46 TUE 119 F",
-      "time_text": "8:46",
+      "display_text": "PM 9:07 TUE 119 F",
+      "time_text": "9:07 PM",
       "day_text": "TUE",
       "cascade_text": null,
-      "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements); state change: flame_on)",
+      "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements))",
       "legible": true,
       "confidence": "high",
       "pump_on": true,
@@ -43,8 +43,7 @@
           "day_text"
         ],
         "reasons": [
-          "building trust (5 field(s) under 200 agreements)",
-          "state change: flame_on"
+          "building trust (5 field(s) under 200 agreements)"
         ],
         "verified_by": "claude-sonnet-5-5",
         "arbiter": null
@@ -53,13 +52,13 @@
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3797,
-      "output": 245,
+      "output": 259,
       "cache_read": 0,
       "calls": [
         {
           "model": "claude-sonnet-5-5",
           "input": 3797,
-          "output": 245,
+          "output": 259,
           "role": "verify"
         }
       ]
@@ -67,11 +66,11 @@
     "lcd": {
       "crop": [
         328,
-        171,
+        172,
         841,
-        323
+        324
       ],
-      "match": 0.912
+      "match": 0.911
     },
     "pixels": {
       "ok": true,
@@ -84,24 +83,24 @@
       "dhw_pump": false,
       "temperature_f": 119,
       "register": {
-        "ncc": 0.734,
+        "ncc": 0.72,
         "dx": 0,
-        "dy": 0
+        "dy": -1
       },
       "scores": {
-        "radiator": 51.9,
+        "radiator": 50.4,
         "flame": 34.3,
-        "fan": 36.2,
-        "boiler_pump": 42.3,
-        "ch_pump": 46.3,
-        "house": 30.1,
-        "comm": 19.0,
-        "sun": 12.9,
-        "snowflake": 5.9,
-        "dhw_box": 2.0,
-        "info": 0.9,
-        "wrench": 2.5,
-        "dhw_pump": -3.3
+        "fan": 36.3,
+        "boiler_pump": 41.3,
+        "ch_pump": 48.6,
+        "house": 29.2,
+        "comm": 17.5,
+        "sun": 5.7,
+        "snowflake": 4.0,
+        "dhw_box": 0.1,
+        "info": -0.3,
+        "wrench": 1.6,
+        "dhw_pump": -3.1
       },
       "provisional": [
         "sun",
@@ -113,40 +112,40 @@
       ]
     },
     "trust": {
-      "cycles": 69,
-      "model_calls": 69,
+      "cycles": 70,
+      "model_calls": 70,
       "streaks": {
-        "mode": 69,
-        "flame_on": 69,
-        "boiler_pump": 69,
-        "ch_pump": 69,
-        "temperature": 69
+        "mode": 70,
+        "flame_on": 70,
+        "boiler_pump": 70,
+        "ch_pump": 70,
+        "temperature": 70
       },
       "learned_icons": []
     }
   },
   "zone": {
-    "image": "zone_20261018_112148.jpg",
+    "image": "zone_20261018_113658.jpg",
     "pixels": {
       "power": {
-        "white": 0.756,
+        "white": 0.746,
         "mean": 214
       },
       "zone1": {
         "white": 0.0,
-        "mean": 90
+        "mean": 89
       },
       "zone2": {
-        "white": 0.203,
-        "mean": 139
+        "white": 0.208,
+        "mean": 138
       },
       "zone3": {
         "white": 0.716,
-        "mean": 211
+        "mean": 210
       },
       "zone4": {
         "white": 0.0,
-        "mean": 99
+        "mean": 97
       }
     },
     "reading": {
@@ -156,7 +155,7 @@
       "zone3": true,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.76, zone1 0.00, zone2 0.20, zone3 0.72, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.75, zone1 0.00, zone2 0.21, zone3 0.72, zone4 0.00"
     }
   },
   "alert": {
