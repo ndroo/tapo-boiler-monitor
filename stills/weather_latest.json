@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-10-18T04:52:49.244692+00:00",
-  "observed": "2026-10-18T04:45Z",
+  "timestamp": "2026-10-18T05:07:59.425826+00:00",
+  "observed": "2026-10-18T05:00Z",
   "address": "180 Beatrice St, Toronto, Ontario, Canada",
   "lat": 43.65576,
   "lon": -79.41758,
   "temp_c": 4.8,
-  "apparent_c": 1.1,
+  "apparent_c": 0.9,
   "humidity": 67,
-  "wind_kmh": 10.2,
+  "wind_kmh": 10.9,
   "precip_mm": 0.0,
   "weather_code": 0,
   "source": "open-meteo"
