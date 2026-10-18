@@ -236,3 +236,4 @@
 {"t": "2026-10-18T19:00Z", "temp_c": 18.6, "apparent_c": 13.7, "humidity": 28, "wind_kmh": 18.5, "precip_mm": 0.0, "weather_code": 0}
 {"t": "2026-10-18T20:00Z", "temp_c": 18.7, "apparent_c": 14.9, "humidity": 35, "wind_kmh": 15.1, "precip_mm": 0.0, "weather_code": 0}
 {"t": "2026-10-18T21:00Z", "temp_c": 17.9, "apparent_c": 13.6, "humidity": 34, "wind_kmh": 17.3, "precip_mm": 0.0, "weather_code": 0}
+{"t": "2026-10-18T22:00Z", "temp_c": 15.7, "apparent_c": 12.1, "humidity": 44, "wind_kmh": 14.5, "precip_mm": 0.0, "weather_code": 0}

@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-18T21:55:02.462652+00:00",
-  "local": "2026-10-18T21:55:02",
+  "timestamp": "2026-10-18T22:07:33.640863+00:00",
+  "local": "2026-10-18T22:07:33",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,9 +14,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:47:24",
+      "last_status": "2026-10-18 22:02:24",
       "hvac_mode": "heat",
-      "temp": 69.4,
+      "temp": 69.3,
       "humidity": 48,
       "set_heat": 68.9,
       "set_cool": 77.9,
@@ -29,7 +29,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 69.4,
+          "temp": 69.3,
           "occupied": false,
           "humidity": 48
         }
@@ -85,7 +85,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:52:24",
+      "last_status": "2026-10-18 22:03:24",
       "hvac_mode": "heat",
       "temp": 72.1,
       "humidity": 44,
@@ -118,7 +118,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:54:30",
+      "last_status": "2026-10-18 22:05:01",
       "hvac_mode": "auto",
       "temp": 70.1,
       "humidity": 52,
@@ -161,7 +161,7 @@
         {
           "name": "152 Strachan Ave",
           "type": "thermostat",
-          "temp": 69.5,
+          "temp": 69.6,
           "occupied": true,
           "humidity": 52
         },
@@ -186,10 +186,10 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:54:55",
+      "last_status": "2026-10-18 22:07:25",
       "hvac_mode": "off",
-      "temp": 65.4,
-      "humidity": 50,
+      "temp": 65.2,
+      "humidity": 49,
       "set_heat": 66.2,
       "set_cool": 66.2,
       "equipment": [],
@@ -206,9 +206,9 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 65.4,
+          "temp": 65.2,
           "occupied": null,
-          "humidity": 50
+          "humidity": 49
         }
       ]
     },
