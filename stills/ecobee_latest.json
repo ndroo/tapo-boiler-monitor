@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-18T15:39:51.438543+00:00",
-  "local": "2026-10-18T15:39:51",
+  "timestamp": "2026-10-18T15:55:01.405458+00:00",
+  "local": "2026-10-18T15:55:01",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,9 +14,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 15:38:56",
+      "last_status": "2026-10-18 15:54:57",
       "hvac_mode": "heat",
-      "temp": 68.7,
+      "temp": 68.8,
       "humidity": 49,
       "set_heat": 68.9,
       "set_cool": 77.9,
@@ -29,7 +29,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 68.7,
+          "temp": 68.8,
           "occupied": false,
           "humidity": 49
         }
@@ -85,7 +85,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 15:37:25",
+      "last_status": "2026-10-18 15:51:25",
       "hvac_mode": "heat",
       "temp": 72.1,
       "humidity": 44,
@@ -118,10 +118,10 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 15:37:34",
+      "last_status": "2026-10-18 15:50:03",
       "hvac_mode": "auto",
       "temp": 68.9,
-      "humidity": 54,
+      "humidity": 55,
       "set_heat": 69.6,
       "set_cool": 74.6,
       "equipment": [],
@@ -161,9 +161,9 @@
         {
           "name": "152 Strachan Ave",
           "type": "thermostat",
-          "temp": 71.5,
+          "temp": 71.1,
           "occupied": true,
-          "humidity": 54
+          "humidity": 55
         },
         {
           "name": "Basement",
@@ -186,7 +186,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 15:39:28",
+      "last_status": "2026-10-18 15:53:58",
       "hvac_mode": "off",
       "temp": 64.2,
       "humidity": 49,
@@ -224,7 +224,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 15:38:55",
+      "last_status": "2026-10-18 15:53:40",
       "hvac_mode": "off",
       "temp": 61.9,
       "humidity": 49,
