@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-10-18T14:39:13.474037+00:00",
-  "local": "2026-10-18T14:39:13",
+  "timestamp": "2026-10-18T14:54:23.083661+00:00",
+  "local": "2026-10-18T14:54:23",
   "boiler": {
-    "image": "boiler_20261018_143928.jpg",
+    "image": "boiler_20261018_145438.jpg",
     "reading": {
       "flame_on": false,
       "fan_on": false,
@@ -16,11 +16,11 @@
       "wrench_icon": false,
       "house_icon": true,
       "comm_icon": true,
-      "temperature": "110\u00b0F",
+      "temperature": "109\u00b0F",
       "ch_icon": false,
       "error_codes": [],
-      "display_text": "AM 12:04 WED 110 \u00b0F",
-      "time_text": "12:04 AM",
+      "display_text": "AM 12:19 WED 109 F",
+      "time_text": "12:19 AM",
       "day_text": "WED",
       "cascade_text": null,
       "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements))",
@@ -52,13 +52,13 @@
     "usage": {
       "model": "claude-sonnet-5-5",
       "input": 3797,
-      "output": 257,
+      "output": 259,
       "cache_read": 0,
       "calls": [
         {
           "model": "claude-sonnet-5-5",
           "input": 3797,
-          "output": 257,
+          "output": 259,
           "role": "verify"
         }
       ]
@@ -70,7 +70,7 @@
         842,
         324
       ],
-      "match": 0.91
+      "match": 0.903
     },
     "pixels": {
       "ok": true,
@@ -81,26 +81,26 @@
       "ch_pump": false,
       "dhw_box": false,
       "dhw_pump": false,
-      "temperature_f": 110,
+      "temperature_f": 109,
       "register": {
-        "ncc": 0.732,
+        "ncc": 0.72,
         "dx": 0,
         "dy": -1
       },
       "scores": {
-        "radiator": 20.6,
-        "flame": 13.0,
-        "fan": 13.9,
-        "boiler_pump": 9.8,
-        "ch_pump": 22.2,
-        "house": 29.9,
-        "comm": 16.8,
+        "radiator": 19.3,
+        "flame": 12.9,
+        "fan": 13.5,
+        "boiler_pump": 9.3,
+        "ch_pump": 21.9,
+        "house": 28.4,
+        "comm": 16.7,
         "sun": 8.0,
-        "snowflake": 6.7,
-        "dhw_box": 1.2,
-        "info": -0.1,
-        "wrench": 2.2,
-        "dhw_pump": -4.7
+        "snowflake": 4.8,
+        "dhw_box": 0.3,
+        "info": 0.6,
+        "wrench": 2.4,
+        "dhw_pump": -4.3
       },
       "provisional": [
         "sun",
@@ -112,24 +112,24 @@
       ]
     },
     "trust": {
-      "cycles": 82,
-      "model_calls": 82,
+      "cycles": 83,
+      "model_calls": 83,
       "streaks": {
-        "mode": 82,
-        "flame_on": 82,
-        "boiler_pump": 82,
-        "ch_pump": 82,
-        "temperature": 82
+        "mode": 83,
+        "flame_on": 83,
+        "boiler_pump": 83,
+        "ch_pump": 83,
+        "temperature": 83
       },
       "learned_icons": []
     }
   },
   "zone": {
-    "image": "zone_20261018_143948.jpg",
+    "image": "zone_20261018_145458.jpg",
     "pixels": {
       "power": {
-        "white": 0.782,
-        "mean": 220
+        "white": 0.792,
+        "mean": 222
       },
       "zone1": {
         "white": 0.0,
@@ -137,11 +137,11 @@
       },
       "zone2": {
         "white": 0.0,
-        "mean": 55
+        "mean": 54
       },
       "zone3": {
         "white": 0.0,
-        "mean": 50
+        "mean": 51
       },
       "zone4": {
         "white": 0.0,
@@ -155,7 +155,7 @@
       "zone3": false,
       "zone4": false,
       "method": "pixels",
-      "notes": "white-core fraction per LED: power 0.78, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
+      "notes": "white-core fraction per LED: power 0.79, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
