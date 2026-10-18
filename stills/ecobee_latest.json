@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-18T18:07:40.652265+00:00",
-  "local": "2026-10-18T18:07:40",
+  "timestamp": "2026-10-18T18:22:50.186586+00:00",
+  "local": "2026-10-18T18:22:50",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,7 +14,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 18:02:26",
+      "last_status": "2026-10-18 18:17:26",
       "hvac_mode": "heat",
       "temp": 68.8,
       "humidity": 49,
@@ -85,7 +85,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 18:05:39",
+      "last_status": "2026-10-18 18:22:40",
       "hvac_mode": "heat",
       "temp": 72.2,
       "humidity": 44,
@@ -118,7 +118,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 18:05:47",
+      "last_status": "2026-10-18 18:19:02",
       "hvac_mode": "auto",
       "temp": 68.9,
       "humidity": 49,
@@ -161,7 +161,7 @@
         {
           "name": "152 Strachan Ave",
           "type": "thermostat",
-          "temp": 69.6,
+          "temp": 69.8,
           "occupied": false,
           "humidity": 49
         },
@@ -186,9 +186,9 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 18:07:12",
+      "last_status": "2026-10-18 18:19:56",
       "hvac_mode": "off",
-      "temp": 65.0,
+      "temp": 65.1,
       "humidity": 49,
       "set_heat": 66.2,
       "set_cool": 66.2,
@@ -206,7 +206,7 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 65.0,
+          "temp": 65.1,
           "occupied": null,
           "humidity": 49
         }
@@ -224,9 +224,9 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 17:57:54",
+      "last_status": "2026-10-18 18:20:54",
       "hvac_mode": "off",
-      "temp": 62.8,
+      "temp": 63.0,
       "humidity": 49,
       "set_heat": 68.0,
       "set_cool": 77.9,
@@ -239,7 +239,7 @@
         {
           "name": "Upstairs",
           "type": "thermostat",
-          "temp": 62.8,
+          "temp": 63.0,
           "occupied": null,
           "humidity": 49
         }
