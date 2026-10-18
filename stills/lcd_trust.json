@@ -1,34 +1,34 @@
 {
  "fields": {
   "mode": {
-   "streak": 90,
-   "agree": 90,
+   "streak": 91,
+   "agree": 91,
    "disagree": 0
   },
   "flame_on": {
-   "streak": 90,
-   "agree": 90,
+   "streak": 91,
+   "agree": 91,
    "disagree": 0
   },
   "boiler_pump": {
-   "streak": 90,
-   "agree": 90,
+   "streak": 91,
+   "agree": 91,
    "disagree": 0
   },
   "ch_pump": {
-   "streak": 90,
-   "agree": 90,
+   "streak": 91,
+   "agree": 91,
    "disagree": 0
   },
   "temperature": {
-   "streak": 90,
-   "agree": 90,
+   "streak": 91,
+   "agree": 91,
    "disagree": 0
   }
  },
  "learned_icons": {},
- "cycles": 90,
- "model_calls": 90,
+ "cycles": 91,
+ "model_calls": 91,
  "disagreements": [
   {
    "ts": "2026-10-17T21:35:49+00:00",
@@ -215,5 +215,5 @@
    }
   }
  ],
- "last_model_check_ts": 1792341417.7764785
+ "last_model_check_ts": 1792342326.8333578
 }
