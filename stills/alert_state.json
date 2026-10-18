@@ -1,6 +1,6 @@
 {
   "sig": "",
-  "cap_fail": 1,
+  "cap_fail": 0,
   "alerted_open": false,
   "pass_since_alert": true
 }
