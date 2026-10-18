@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-18T23:38:36.546318+00:00",
-  "local": "2026-10-18T23:38:36",
+  "timestamp": "2026-10-18T23:53:46.089484+00:00",
+  "local": "2026-10-18T23:53:46",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,7 +14,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:32:24",
+      "last_status": "2026-10-18 23:53:23",
       "hvac_mode": "heat",
       "temp": 69.1,
       "humidity": 49,
@@ -85,9 +85,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:33:23",
+      "last_status": "2026-10-18 23:53:08",
       "hvac_mode": "heat",
-      "temp": 72.0,
+      "temp": 71.9,
       "humidity": 45,
       "set_heat": 71.6,
       "set_cool": 77.9,
@@ -100,7 +100,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 72.0,
+          "temp": 71.9,
           "occupied": false,
           "humidity": 45
         }
@@ -118,9 +118,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:34:00",
+      "last_status": "2026-10-18 23:49:00",
       "hvac_mode": "auto",
-      "temp": 69.8,
+      "temp": 69.6,
       "humidity": 54,
       "set_heat": 69.6,
       "set_cool": 74.6,
@@ -133,7 +133,7 @@
         {
           "name": "Master bedroom",
           "type": "ecobee3_remote_sensor",
-          "temp": 69.8,
+          "temp": 69.6,
           "occupied": false,
           "humidity": null
         },
@@ -186,9 +186,9 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:36:24",
+      "last_status": "2026-10-18 23:53:39",
       "hvac_mode": "off",
-      "temp": 69.9,
+      "temp": 69.8,
       "humidity": 48,
       "set_heat": 66.2,
       "set_cool": 66.2,
@@ -206,7 +206,7 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 69.9,
+          "temp": 69.8,
           "occupied": null,
           "humidity": 48
         }
@@ -224,7 +224,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:37:06",
+      "last_status": "2026-10-18 23:53:36",
       "hvac_mode": "off",
       "temp": 65.7,
       "humidity": 49,
