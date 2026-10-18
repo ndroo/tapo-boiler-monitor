@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-10-18T13:08:00.159810+00:00",
-  "local": "2026-10-18T13:08:00",
+  "timestamp": "2026-10-18T13:23:24.174564+00:00",
+  "local": "2026-10-18T13:23:24",
   "boiler": {
-    "image": "boiler_20261018_130815.jpg",
+    "image": "boiler_20261018_132339.jpg",
     "reading": {
-      "flame_on": true,
-      "fan_on": true,
-      "boiler_pump": true,
-      "ch_pump": true,
+      "flame_on": false,
+      "fan_on": false,
+      "boiler_pump": false,
+      "ch_pump": false,
       "dhw_pump": false,
       "dhw_icon": false,
       "sun_icon": false,
@@ -17,17 +17,17 @@
       "house_icon": true,
       "comm_icon": true,
       "temperature": "118\u00b0F",
-      "ch_icon": true,
+      "ch_icon": false,
       "error_codes": [],
-      "display_text": "10:33 TUE 118 F",
-      "time_text": "10:33",
+      "display_text": "BI 10:48 TUE 118 F",
+      "time_text": "10:48",
       "day_text": "TUE",
       "cascade_text": null,
-      "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements)) | disagreement on flame_on (arbiter: pixels)",
+      "notes": "pixels + claude-sonnet-5-5 (building trust (5 field(s) under 200 agreements); state change: mode, flame_on, boiler_pump, ch_pump)",
       "legible": true,
       "confidence": "high",
-      "pump_on": true,
-      "mode": "heating",
+      "pump_on": false,
+      "mode": "idle",
       "source": {
         "pixels": [
           "mode",
@@ -43,37 +43,26 @@
           "day_text"
         ],
         "reasons": [
-          "building trust (5 field(s) under 200 agreements)"
+          "building trust (5 field(s) under 200 agreements)",
+          "state change: mode, flame_on, boiler_pump, ch_pump"
         ],
         "verified_by": "claude-sonnet-5-5",
-        "arbiter": {
-          "model": "claude-opus-5-5",
-          "verdict": {
-            "flame_on": "pixels"
-          }
-        }
+        "arbiter": null
       }
     },
     "usage": {
       "model": "claude-sonnet-5-5",
-      "input": 7594,
-      "output": 770,
+      "input": 3797,
+      "output": 259,
       "cache_read": 0,
       "calls": [
         {
           "model": "claude-sonnet-5-5",
           "input": 3797,
-          "output": 252,
+          "output": 259,
           "role": "verify"
-        },
-        {
-          "model": "claude-opus-5-5",
-          "input": 3797,
-          "output": 518,
-          "role": "arbiter"
         }
-      ],
-      "confirm_model": "claude-opus-5-5"
+      ]
     },
     "lcd": {
       "crop": [
@@ -82,37 +71,37 @@
         841,
         324
       ],
-      "match": 0.899
+      "match": 0.917
     },
     "pixels": {
       "ok": true,
-      "mode": "heating",
-      "flame": true,
-      "fan": true,
-      "boiler_pump": true,
-      "ch_pump": true,
+      "mode": "idle",
+      "flame": false,
+      "fan": false,
+      "boiler_pump": false,
+      "ch_pump": false,
       "dhw_box": false,
       "dhw_pump": false,
       "temperature_f": 118,
       "register": {
-        "ncc": 0.722,
+        "ncc": 0.751,
         "dx": 1,
         "dy": -1
       },
       "scores": {
-        "radiator": 49.3,
-        "flame": 33.5,
-        "fan": 34.3,
-        "boiler_pump": 41.9,
-        "ch_pump": 46.6,
+        "radiator": 20.3,
+        "flame": 12.6,
+        "fan": 14.9,
+        "boiler_pump": 10.5,
+        "ch_pump": 22.1,
         "house": 30.0,
-        "comm": 18.2,
-        "sun": 8.3,
-        "snowflake": 4.3,
-        "dhw_box": 0.4,
-        "info": 0.1,
-        "wrench": 3.1,
-        "dhw_pump": -2.6
+        "comm": 18.7,
+        "sun": 7.5,
+        "snowflake": 6.0,
+        "dhw_box": 1.2,
+        "info": 0.9,
+        "wrench": 4.1,
+        "dhw_pump": -3.4
       },
       "provisional": [
         "sun",
@@ -124,64 +113,50 @@
       ]
     },
     "trust": {
-      "cycles": 76,
-      "model_calls": 76,
+      "cycles": 77,
+      "model_calls": 77,
       "streaks": {
-        "mode": 76,
-        "flame_on": 76,
-        "boiler_pump": 76,
-        "ch_pump": 76,
-        "temperature": 76
+        "mode": 77,
+        "flame_on": 77,
+        "boiler_pump": 77,
+        "ch_pump": 77,
+        "temperature": 77
       },
       "learned_icons": []
     }
   },
   "zone": {
-    "image": "zone_20261018_130844.jpg",
+    "image": "zone_20261018_132359.jpg",
     "pixels": {
       "power": {
-        "white": 0.726,
-        "mean": 210
+        "white": 0.756,
+        "mean": 215
       },
       "zone1": {
-        "white": 0.452,
-        "mean": 157
+        "white": 0.0,
+        "mean": 88
       },
       "zone2": {
-        "white": 0.665,
-        "mean": 203
+        "white": 0.0,
+        "mean": 54
       },
       "zone3": {
         "white": 0.0,
-        "mean": 99
+        "mean": 51
       },
       "zone4": {
         "white": 0.0,
-        "mean": 52
+        "mean": 46
       }
-    },
-    "usage": {
-      "model": "claude-opus-5-5",
-      "input": 1708,
-      "output": 189,
-      "cache_read": 0
     },
     "reading": {
       "power": true,
-      "zone1": true,
-      "zone2": true,
+      "zone1": false,
+      "zone2": false,
       "zone3": false,
       "zone4": false,
-      "notes": "POWER shows a bright white core with a green halo, so it is on. ZONE 1 has a bright near-white core with a red rim, so it is on. ZONE 2 is the brightest, a blown-out white core with a magenta halo, so it is on. ZONE 3 is only a dim pink dot with no bright core, which is bleed from ZONE 2, so it is off. ZONE 4/PRIORITY is a dark grey dot, so it is off.",
-      "method": "claude",
-      "pixel_verdict": {
-        "power": true,
-        "zone1": false,
-        "zone2": true,
-        "zone3": false,
-        "zone4": false
-      },
-      "why_llm": "ambiguous:zone1"
+      "method": "pixels",
+      "notes": "white-core fraction per LED: power 0.76, zone1 0.00, zone2 0.00, zone3 0.00, zone4 0.00"
     }
   },
   "alert": {
