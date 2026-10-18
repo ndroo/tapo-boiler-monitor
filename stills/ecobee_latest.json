@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-18T21:09:35.650800+00:00",
-  "local": "2026-10-18T21:09:35",
+  "timestamp": "2026-10-18T21:24:44.085925+00:00",
+  "local": "2026-10-18T21:24:44",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,7 +14,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:02:24",
+      "last_status": "2026-10-18 21:17:24",
       "hvac_mode": "heat",
       "temp": 69.4,
       "humidity": 48,
@@ -85,9 +85,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:03:54",
+      "last_status": "2026-10-18 21:22:39",
       "hvac_mode": "heat",
-      "temp": 72.3,
+      "temp": 72.1,
       "humidity": 44,
       "set_heat": 71.6,
       "set_cool": 77.9,
@@ -100,7 +100,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 72.3,
+          "temp": 72.1,
           "occupied": false,
           "humidity": 44
         }
@@ -118,7 +118,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:08:15",
+      "last_status": "2026-10-18 21:24:30",
       "hvac_mode": "auto",
       "temp": 70.1,
       "humidity": 50,
@@ -186,7 +186,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:08:56",
+      "last_status": "2026-10-18 21:23:56",
       "hvac_mode": "off",
       "temp": 64.9,
       "humidity": 49,
@@ -224,7 +224,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 21:08:37",
+      "last_status": "2026-10-18 21:23:38",
       "hvac_mode": "off",
       "temp": 63.4,
       "humidity": 49,
