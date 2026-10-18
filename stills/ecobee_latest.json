@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-18T08:37:17.688127+00:00",
-  "local": "2026-10-18T08:37:17",
+  "timestamp": "2026-10-18T08:52:31.354397+00:00",
+  "local": "2026-10-18T08:52:31",
   "thermostats": [
     {
       "id": "511899414284",
@@ -13,7 +13,7 @@
         "streetAddress": "180 Beatrice St",
         "city": "Toronto"
       },
-      "connected": true,
+      "connected": false,
       "last_status": "2026-10-18 08:36:43",
       "hvac_mode": "heat",
       "temp": 67.6,
@@ -87,9 +87,9 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 08:33:26",
+      "last_status": "2026-10-18 08:50:26",
       "hvac_mode": "heat",
-      "temp": 71.3,
+      "temp": 71.1,
       "humidity": 44,
       "set_heat": 69.8,
       "set_cool": 82.4,
@@ -102,7 +102,7 @@
         {
           "name": "Home",
           "type": "thermostat",
-          "temp": 71.3,
+          "temp": 71.1,
           "occupied": false,
           "humidity": 44
         }
@@ -120,7 +120,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 08:36:05",
+      "last_status": "2026-10-18 08:50:50",
       "hvac_mode": "auto",
       "temp": 67.1,
       "humidity": 56,
@@ -188,10 +188,10 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 08:34:17",
+      "last_status": "2026-10-18 08:48:31",
       "hvac_mode": "off",
-      "temp": 64.7,
-      "humidity": 46,
+      "temp": 64.6,
+      "humidity": 45,
       "set_heat": 66.2,
       "set_cool": 66.2,
       "equipment": [],
@@ -208,9 +208,9 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 64.7,
+          "temp": 64.6,
           "occupied": null,
-          "humidity": 46
+          "humidity": 45
         }
       ]
     },
@@ -226,7 +226,7 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 08:32:28",
+      "last_status": "2026-10-18 08:46:13",
       "hvac_mode": "off",
       "temp": 61.6,
       "humidity": 49,
