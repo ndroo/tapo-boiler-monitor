@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-10-18T23:53:46.089484+00:00",
-  "local": "2026-10-18T23:53:46",
+  "timestamp": "2026-10-19T00:09:07.717768+00:00",
+  "local": "2026-10-19T00:09:07",
   "thermostats": [
     {
       "id": "511899414284",
@@ -14,7 +14,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:53:23",
+      "last_status": "2026-10-19 00:02:23",
       "hvac_mode": "heat",
       "temp": 69.1,
       "humidity": 49,
@@ -85,7 +85,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:53:08",
+      "last_status": "2026-10-19 00:03:23",
       "hvac_mode": "heat",
       "temp": 71.9,
       "humidity": 45,
@@ -118,7 +118,7 @@
         "city": "Toronto"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:49:00",
+      "last_status": "2026-10-19 00:03:59",
       "hvac_mode": "auto",
       "temp": 69.6,
       "humidity": 54,
@@ -186,10 +186,10 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:53:39",
+      "last_status": "2026-10-19 00:08:54",
       "hvac_mode": "off",
-      "temp": 69.8,
-      "humidity": 48,
+      "temp": 70.8,
+      "humidity": 47,
       "set_heat": 66.2,
       "set_cool": 66.2,
       "equipment": [],
@@ -206,9 +206,9 @@
         {
           "name": "Main Floor",
           "type": "thermostat",
-          "temp": 69.8,
+          "temp": 70.8,
           "occupied": null,
-          "humidity": 48
+          "humidity": 47
         }
       ]
     },
@@ -224,9 +224,9 @@
         "city": "Dysart and Others"
       },
       "connected": true,
-      "last_status": "2026-10-18 23:53:36",
+      "last_status": "2026-10-19 00:08:36",
       "hvac_mode": "off",
-      "temp": 65.7,
+      "temp": 66.3,
       "humidity": 49,
       "set_heat": 68.0,
       "set_cool": 77.9,
@@ -239,7 +239,7 @@
         {
           "name": "Upstairs",
           "type": "thermostat",
-          "temp": 65.7,
+          "temp": 66.3,
           "occupied": null,
           "humidity": 49
         }
