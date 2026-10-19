@@ -1,3 +1,9 @@
+# Tapo Boiler Monitor (retired)
+
+**Moved on 2026-10-19.** The monitor now runs inside the cameras app (`ndroo/cameras`, folder `heating/`) on the always-on camera server, and the dashboard lives at https://180beatrice.andrewmcgrath.info/heating/ . The GitHub Actions loop in this repo is disabled and the Pages site only redirects. History was imported, so nothing was lost.
+
+---
+
 # Tapo Boiler Monitor
 
 Hands-off monitoring every 30 minutes of a boiler + zone-controller via two Tapo C100 cameras —
